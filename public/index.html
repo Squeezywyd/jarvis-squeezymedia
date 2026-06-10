@@ -776,7 +776,8 @@ const S = {
   synthVoice: null,
   speechQueue: [],
   speechBusy: false,
-  transcript: ''
+  transcript: '',
+  wakeRecPaused: false
 };
 
 const QUOTES = [
@@ -1035,7 +1036,7 @@ function initWakeWord(SR) {
       const t = e.results[e.results.length-1][0].transcript.toLowerCase();
       if (t.includes('jarvis')) { startListening(); }
     };
-    S.wakeRec.onend = () => { try { S.wakeRec.start(); } catch(e){} };
+    S.wakeRec.onend = () => { if (!S.wakeRecPaused) try { S.wakeRec.start(); } catch(e){} };
     S.wakeRec.start();
   } catch(e) { console.warn('Wake word init failed:', e); }
 }
@@ -1044,11 +1045,23 @@ function startListening(e) {
   if (e) e.preventDefault();
   if (S.listening || !S.recognition) return;
   if (S.speaking) speechSynthesis.cancel();
+  // Pause wake word listener so it doesn't block the main recognition
+  S.wakeRecPaused = true;
+  try { S.wakeRec && S.wakeRec.abort(); } catch(_) {}
   S.listening = true;
   S.transcript = '';
   setVoiceState('listening');
   document.getElementById('live-transcript').textContent = '';
-  try { S.recognition.start(); } catch(err) { console.warn(err); S.listening = false; setVoiceState('standby'); }
+  try {
+    S.recognition.start();
+  } catch(err) {
+    console.warn('Recognition start error:', err);
+    S.listening = false;
+    S.wakeRecPaused = false;
+    setVoiceState('standby');
+    // Resume wake word
+    try { S.wakeRec && S.wakeRec.start(); } catch(_) {}
+  }
 }
 
 function stopListening() {
@@ -1058,6 +1071,10 @@ function stopListening() {
   setVoiceState('standby');
   const said = S.transcript.trim();
   S.transcript = '';
+  document.getElementById('live-transcript').textContent = '';
+  // Resume wake word listener
+  S.wakeRecPaused = false;
+  setTimeout(() => { try { S.wakeRec && S.wakeRec.start(); } catch(_) {} }, 300);
   if (said) sendChat(said, true);
 }
 
