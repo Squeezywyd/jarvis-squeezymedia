@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Read(//c/c/Users/Nael Ackle/OneDrive - BBBaden/Dokumente/Persönliche Projekte/**)",
+      "Read(//c/c/Users/Nael Ackle/OneDrive - BBBaden/Dokumente/Persönliche Projekte/jarvis/public/**)",
+      "Bash(node -e \"require\\('./server.js'\\)\")",
+      "Bash(curl -s http://localhost:3000/api/stats)",
+      "Bash(kill %1)",
+      "Bash(node --input-type=module)",
+      "Bash(node -e ' *)"
+    ]
+  }
+}

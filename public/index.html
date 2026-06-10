@@ -1,0 +1,2149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS // SQUEEZYMEDIA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #020810;
+  --bg2: #030d1a;
+  --bg3: #041020;
+  --cyan: #00D4FF;
+  --cyan2: #0099CC;
+  --cyan3: #004466;
+  --amber: #FFB800;
+  --green: #00FF88;
+  --white: #e8f4ff;
+  --grey: #4a6070;
+  --grey2: #8899aa;
+  --border: rgba(0,212,255,0.25);
+  --border2: rgba(0,212,255,0.1);
+  --glow: 0 0 8px rgba(0,212,255,0.4);
+  --glow2: 0 0 16px rgba(0,212,255,0.6);
+  --glow3: 0 0 30px rgba(0,212,255,0.8);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--white);font-family:'Rajdhani',sans-serif;font-size:14px}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--cyan3);border-radius:2px}
+
+/* ── LAYOUT ── */
+#app{display:grid;grid-template-rows:60px 1fr 54px;height:100vh;overflow:hidden}
+#main{display:grid;grid-template-columns:220px 1fr 280px;overflow:hidden;min-height:0}
+
+/* ── TOPBAR ── */
+#topbar{display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--border);background:var(--bg2);position:relative;overflow:hidden;gap:16px}
+.tb-logo{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.tb-arc{width:28px;height:28px;border-radius:50%;border:2px solid var(--cyan);display:flex;align-items:center;justify-content:center;animation:arcPulse 2s ease-in-out infinite;box-shadow:var(--glow)}
+.tb-arc::after{content:'';width:10px;height:10px;border-radius:50%;background:var(--cyan);box-shadow:var(--glow3)}
+.tb-title{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:var(--cyan);letter-spacing:2px;text-shadow:var(--glow)}
+.tb-sub{font-family:'Rajdhani',sans-serif;font-size:10px;color:var(--grey2);letter-spacing:3px;display:block;margin-top:1px}
+.tb-scan{flex:1;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);position:relative;overflow:hidden}
+.tb-scan::after{content:'';position:absolute;top:0;left:-100%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,212,255,0.8),transparent);animation:scan 3s linear infinite}
+.tb-clock{text-align:right;flex-shrink:0}
+#tb-time{font-family:'Orbitron',sans-serif;font-size:18px;color:var(--cyan);text-shadow:var(--glow);letter-spacing:2px}
+#tb-date{font-size:10px;color:var(--grey2);letter-spacing:2px;text-transform:uppercase}
+.tb-dots{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.tb-dot{width:8px;height:8px;border-radius:50%;animation:blink 2s ease-in-out infinite}
+.tb-dot.green{background:var(--green);box-shadow:0 0 6px var(--green)}
+.tb-dot.cyan{background:var(--cyan);box-shadow:var(--glow)}
+.tb-dot.amber{background:var(--amber);box-shadow:0 0 6px var(--amber);animation-delay:.5s}
+
+/* ── LEFT PANEL ── */
+#left-panel{border-right:1px solid var(--border);background:var(--bg2);overflow-y:auto;display:flex;flex-direction:column;gap:0}
+nav{padding:12px 0}
+.nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 16px;background:none;border:none;border-left:3px solid transparent;color:var(--grey2);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:1.5px;cursor:pointer;transition:all .2s;text-align:left}
+.nav-btn:hover{background:rgba(0,212,255,0.06);color:var(--white);border-left-color:var(--cyan2)}
+.nav-btn.active{background:rgba(0,212,255,0.1);color:var(--cyan);border-left-color:var(--cyan);text-shadow:var(--glow)}
+.nav-icon{font-size:10px;opacity:.7}
+.lp-section{padding:12px 16px;border-top:1px solid var(--border2)}
+.lp-label{font-family:'Orbitron',sans-serif;font-size:9px;color:var(--cyan2);letter-spacing:2px;margin-bottom:10px;opacity:.8}
+.lp-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;color:var(--grey2)}
+.lp-row span:last-child{color:var(--white);font-weight:600}
+.lp-val-ok{color:var(--green)!important}
+.lp-val-warn{color:var(--amber)!important}
+.pkg-row{display:flex;justify-content:space-between;padding:3px 0;font-size:11px;color:var(--grey2);border-bottom:1px solid var(--border2)}
+.pkg-row:last-child{border:none}
+.pkg-row span{color:var(--cyan);font-size:11px}
+
+/* ── CENTER PANEL ── */
+#center-panel{overflow:hidden;display:flex;flex-direction:column;background:var(--bg);position:relative}
+#center-panel::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(0,212,255,0.02) 40px,rgba(0,212,255,0.02) 41px),repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(0,212,255,0.02) 40px,rgba(0,212,255,0.02) 41px);pointer-events:none;z-index:0}
+.module{display:none;flex-direction:column;height:100%;overflow:hidden;position:relative;z-index:1}
+.module.active{display:flex}
+.mod-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0;background:rgba(3,13,26,0.8)}
+.mod-title{font-family:'Orbitron',sans-serif;font-size:12px;color:var(--cyan);letter-spacing:3px;text-shadow:var(--glow)}
+.mod-sub{font-size:10px;color:var(--grey2);letter-spacing:2px}
+.mod-header-actions{display:flex;gap:8px;align-items:center}
+
+/* ── RIGHT PANEL ── */
+#right-panel{border-left:1px solid var(--border);background:var(--bg2);overflow-y:auto;padding:14px}
+.rp-label{font-family:'Orbitron',sans-serif;font-size:9px;color:var(--cyan2);letter-spacing:2px;margin-bottom:8px;margin-top:14px;opacity:.8}
+.rp-label:first-child{margin-top:0}
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:10px 12px;margin-bottom:8px}
+.stat-card-label{font-size:10px;color:var(--grey2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px}
+.stat-card-value{font-family:'Orbitron',sans-serif;font-size:20px;color:var(--cyan);text-shadow:var(--glow);font-weight:700}
+.deadline-item{padding:6px 0;border-bottom:1px solid var(--border2);font-size:12px}
+.deadline-item:last-child{border:none}
+.deadline-name{color:var(--white);font-weight:600}
+.deadline-date{color:var(--amber);font-size:11px;margin-top:1px}
+.recent-client{padding:5px 0;border-bottom:1px solid var(--border2);font-size:12px;color:var(--grey2)}
+.recent-client:last-child{border:none}
+.recent-client strong{color:var(--white)}
+.gear-item{display:flex;justify-content:space-between;padding:5px 0;font-size:12px;color:var(--grey2);border-bottom:1px solid var(--border2)}
+.gear-item:last-child{border:none}
+.gear-status{color:var(--green);font-size:10px;letter-spacing:1px}
+
+/* ── BOTTOM BAR ── */
+#bottombar{display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-top:1px solid var(--border);background:var(--bg2);gap:12px}
+.bb-voice{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.vi-dot{width:10px;height:10px;border-radius:50%;background:var(--grey);transition:all .3s}
+.vi-dot.standby{background:var(--grey);box-shadow:none}
+.vi-dot.listening{background:var(--green);box-shadow:0 0 10px var(--green);animation:blink .5s ease-in-out infinite}
+.vi-dot.speaking{background:var(--cyan);box-shadow:var(--glow2);animation:blink 1s ease-in-out infinite}
+#vi-label{font-family:'Orbitron',sans-serif;font-size:9px;color:var(--grey2);letter-spacing:2px}
+.bb-actions{display:flex;gap:6px}
+.bb-hint{font-size:10px;color:var(--grey);letter-spacing:1px;flex-shrink:0;text-align:right}
+
+/* ── BUTTONS ── */
+.hud-btn{background:transparent;border:1px solid var(--cyan2);color:var(--cyan);font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;padding:6px 12px;cursor:pointer;transition:all .2s;clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)}
+.hud-btn:hover{background:rgba(0,212,255,0.15);box-shadow:var(--glow);color:var(--white)}
+.hud-btn.danger{border-color:rgba(255,60,60,0.5);color:#ff4444}
+.hud-btn.danger:hover{background:rgba(255,60,60,0.1);box-shadow:0 0 8px rgba(255,60,60,0.4)}
+.hud-btn.amber{border-color:var(--amber);color:var(--amber)}
+.hud-btn.amber:hover{background:rgba(255,184,0,0.1)}
+.quick-btn{background:transparent;border:1px solid var(--border);color:var(--grey2);font-family:'Rajdhani',sans-serif;font-size:11px;letter-spacing:1px;padding:5px 10px;cursor:pointer;transition:all .2s}
+.quick-btn:hover{border-color:var(--cyan2);color:var(--cyan)}
+.filter-btn{background:transparent;border:1px solid var(--border);color:var(--grey2);font-family:'Rajdhani',sans-serif;font-size:11px;letter-spacing:1px;padding:5px 12px;cursor:pointer;transition:all .2s}
+.filter-btn:hover,.filter-btn.active{background:rgba(0,212,255,0.1);border-color:var(--cyan);color:var(--cyan)}
+.tab-btn{background:transparent;border:none;border-bottom:2px solid transparent;color:var(--grey2);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1.5px;padding:8px 16px;cursor:pointer;transition:all .2s}
+.tab-btn:hover{color:var(--white)}
+.tab-btn.active{border-bottom-color:var(--cyan);color:var(--cyan)}
+.icon-btn{background:transparent;border:none;color:var(--grey2);cursor:pointer;font-size:12px;padding:4px 6px;transition:color .2s}
+.icon-btn:hover{color:var(--cyan)}
+
+/* ── FILTER BAR / TABS ── */
+.filter-bar{display:flex;gap:6px;padding:10px 20px;border-bottom:1px solid var(--border2);flex-shrink:0;flex-wrap:wrap}
+.tab-bar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 20px}
+.content-view{display:none;flex:1;overflow-y:auto;padding:16px 20px}
+.content-view.active{display:block}
+
+/* ── HOME / CHAT ── */
+#arc-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 0;flex-shrink:0}
+#arc-reactor{width:180px;height:180px;position:relative;margin:0 auto}
+.arc-ring{position:absolute;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%)}
+.arc-r1{width:170px;height:170px;border:1px solid rgba(0,212,255,0.2);animation:rotCW 12s linear infinite}
+.arc-r2{width:130px;height:130px;border:2px dashed rgba(0,212,255,0.3);animation:rotCCW 8s linear infinite}
+.arc-r3{width:90px;height:90px;border:2px solid rgba(0,212,255,0.5);animation:rotCW 5s linear infinite}
+.arc-r4{width:50px;height:50px;border:2px solid var(--cyan);box-shadow:var(--glow);animation:rotCCW 3s linear infinite}
+.arc-core{position:absolute;width:28px;height:28px;top:50%;left:50%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#fff 0%,var(--cyan) 40%,var(--cyan2) 70%,transparent 100%);box-shadow:0 0 15px var(--cyan),0 0 30px var(--cyan2);animation:corePulse 2s ease-in-out infinite}
+#wave-bars{position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);display:flex;gap:3px;align-items:flex-end;height:24px}
+.wbar{width:4px;min-height:3px;background:var(--cyan);border-radius:2px;opacity:.6;transition:height .1s}
+#voice-state-label{font-family:'Orbitron',sans-serif;font-size:10px;color:var(--grey2);letter-spacing:3px;margin-top:36px;text-align:center}
+#live-transcript{font-size:13px;color:var(--cyan2);font-style:italic;margin-top:6px;min-height:18px;text-align:center;max-width:400px;padding:0 20px}
+#chat-messages{flex:1;overflow-y:auto;padding:12px 20px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:80%;padding:10px 14px;border-radius:4px;line-height:1.5;font-size:13px;animation:fadeUp .3s ease}
+.msg.user{align-self:flex-end;background:rgba(0,212,255,0.1);border:1px solid var(--border);border-radius:4px 0 4px 4px;color:var(--white)}
+.msg.jarvis{align-self:flex-start;background:rgba(3,13,26,0.8);border:1px solid var(--border);border-left:3px solid var(--cyan);border-radius:0 4px 4px 4px;color:var(--white)}
+.msg-label{font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;margin-bottom:5px}
+.msg.user .msg-label{color:var(--cyan2)}
+.msg.jarvis .msg-label{color:var(--cyan)}
+.msg-typing{display:inline-flex;gap:4px;align-items:center;padding:4px 0}
+.typing-dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:typingDot 1.2s ease-in-out infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+#chat-input-row{display:flex;gap:8px;padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;background:rgba(3,13,26,0.6)}
+#chat-input{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--white);font-family:'Rajdhani',sans-serif;font-size:13px;padding:8px 12px;outline:none;transition:border-color .2s}
+#chat-input:focus{border-color:var(--cyan);box-shadow:var(--glow)}
+#chat-input::placeholder{color:var(--grey)}
+
+/* ── CLIENTS ── */
+.client-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.client-card{background:var(--bg2);border:1px solid var(--border);padding:14px;position:relative;transition:border-color .2s}
+.client-card:hover{border-color:var(--cyan2)}
+.client-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.client-name{font-size:15px;font-weight:700;color:var(--white)}
+.client-type-badge{font-size:10px;padding:2px 8px;border-radius:2px;font-family:'Orbitron',sans-serif;letter-spacing:1px;text-transform:uppercase}
+.badge-private{background:rgba(0,212,255,0.15);color:var(--cyan);border:1px solid var(--cyan3)}
+.badge-dealership{background:rgba(255,184,0,0.15);color:var(--amber);border:1px solid rgba(255,184,0,0.3)}
+.badge-event{background:rgba(0,255,136,0.1);color:var(--green);border:1px solid rgba(0,255,136,0.3)}
+.badge-brand{background:rgba(150,100,255,0.15);color:#a078ff;border:1px solid rgba(150,100,255,0.3)}
+.client-info{font-size:12px;color:var(--grey2);line-height:1.8}
+.client-info span{color:var(--white)}
+.client-actions{display:flex;gap:6px;margin-top:10px;justify-content:flex-end}
+
+/* ── KANBAN ── */
+#kanban-wrap{flex:1;overflow-x:auto;overflow-y:hidden;padding:12px 16px}
+#kanban-board{display:flex;gap:10px;height:100%;min-width:max-content}
+.kb-col{width:180px;flex-shrink:0;display:flex;flex-direction:column;background:var(--bg2);border:1px solid var(--border);border-radius:4px}
+.kb-col-header{padding:8px 10px;border-bottom:1px solid var(--border);font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.kb-col-count{background:var(--cyan3);color:var(--cyan);padding:1px 6px;border-radius:10px;font-size:10px}
+.kb-cards{flex:1;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:6px;min-height:60px}
+.kb-card{background:var(--bg3);border:1px solid var(--border2);border-left:3px solid var(--cyan3);padding:8px;cursor:grab;transition:all .2s;font-size:12px;border-radius:2px}
+.kb-card:hover{border-color:var(--cyan2);border-left-color:var(--cyan);box-shadow:var(--glow)}
+.kb-card.dragging{opacity:.4}
+.kb-card-client{font-weight:700;color:var(--white);margin-bottom:3px}
+.kb-card-car{color:var(--cyan2);font-size:11px}
+.kb-card-date{color:var(--amber);font-size:10px;margin-top:3px}
+.kb-card-rate{color:var(--green);font-size:11px;font-weight:600}
+.kb-card-actions{display:flex;gap:3px;margin-top:6px;flex-wrap:wrap}
+.kb-btn{background:none;border:1px solid var(--border2);color:var(--grey2);font-size:9px;padding:2px 5px;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:.5px;transition:all .2s}
+.kb-btn:hover{border-color:var(--cyan2);color:var(--cyan)}
+.kb-drop-zone{min-height:30px;border:2px dashed transparent;border-radius:2px;transition:all .2s;margin-top:4px}
+.kb-drop-zone.drag-over{border-color:var(--cyan2);background:rgba(0,212,255,0.05)}
+
+/* ── CONTENT CALENDAR ── */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cal-month{font-family:'Orbitron',sans-serif;font-size:13px;color:var(--cyan);letter-spacing:2px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-day-header{text-align:center;font-family:'Orbitron',sans-serif;font-size:9px;color:var(--grey2);letter-spacing:1px;padding:4px 0}
+.cal-day{min-height:70px;background:var(--bg2);border:1px solid var(--border2);padding:4px;cursor:pointer;transition:border-color .2s;position:relative}
+.cal-day:hover{border-color:var(--cyan2)}
+.cal-day.today{border-color:var(--cyan);background:rgba(0,212,255,0.05)}
+.cal-day.other-month{opacity:.3}
+.cal-day-num{font-size:11px;color:var(--grey2);margin-bottom:3px}
+.cal-day.today .cal-day-num{color:var(--cyan);font-weight:700}
+.cal-badge{font-size:9px;padding:1px 4px;border-radius:2px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-badge.instagram{background:rgba(150,100,255,0.3);color:#c0a0ff}
+.cal-badge.tiktok{background:rgba(0,212,255,0.2);color:var(--cyan)}
+.cal-badge.linkedin{background:rgba(0,100,200,0.3);color:#60aaff}
+.cal-badge.youtube{background:rgba(255,50,50,0.2);color:#ff8080}
+
+/* ── CONTENT LIST ── */
+.content-table{width:100%;border-collapse:collapse}
+.content-table th{font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--cyan2);padding:8px;border-bottom:1px solid var(--border);text-align:left}
+.content-table td{padding:8px;border-bottom:1px solid var(--border2);font-size:12px;vertical-align:middle}
+.content-table tr:hover td{background:rgba(0,212,255,0.03)}
+.status-badge{font-size:10px;padding:2px 8px;border-radius:2px;font-family:'Orbitron',sans-serif;letter-spacing:.5px}
+.status-idea{background:rgba(100,100,100,0.3);color:var(--grey2)}
+.status-drafted{background:rgba(255,184,0,0.2);color:var(--amber)}
+.status-scheduled{background:rgba(0,212,255,0.2);color:var(--cyan)}
+.status-posted{background:rgba(0,255,136,0.2);color:var(--green)}
+
+/* ── AI TOOLS ── */
+.ai-tool-section{background:var(--bg2);border:1px solid var(--border);padding:16px;margin-bottom:16px}
+.ai-tool-title{font-family:'Orbitron',sans-serif;font-size:10px;color:var(--cyan);letter-spacing:2px;margin-bottom:12px}
+.ai-result{background:var(--bg3);border:1px solid var(--border2);border-left:3px solid var(--cyan);padding:12px;margin-top:12px;font-size:13px;line-height:1.6;white-space:pre-wrap;display:none;max-height:200px;overflow-y:auto}
+.ai-result.visible{display:block}
+.hashtag-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.h-chip{background:rgba(0,212,255,0.1);border:1px solid var(--cyan3);color:var(--cyan2);font-size:11px;padding:3px 8px;border-radius:2px;cursor:pointer;transition:all .2s}
+.h-chip:hover{background:rgba(0,212,255,0.2);color:var(--cyan)}
+.h-chip.copied{background:rgba(0,255,136,0.15);border-color:var(--green);color:var(--green)}
+
+/* ── BRAND ── */
+.bio-card{background:var(--bg2);border:1px solid var(--border);padding:14px;margin-bottom:12px}
+.bio-platform{font-family:'Orbitron',sans-serif;font-size:10px;color:var(--cyan);letter-spacing:2px;margin-bottom:8px}
+.bio-textarea{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--white);font-family:'Rajdhani',sans-serif;font-size:13px;padding:10px;resize:vertical;min-height:70px;outline:none}
+.bio-textarea:focus{border-color:var(--cyan)}
+.pillar-item{display:flex;align-items:center;gap:10px;padding:8px;background:var(--bg2);border:1px solid var(--border2);margin-bottom:6px}
+.pillar-num{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--cyan2);width:20px;flex-shrink:0}
+.pillar-text{flex:1;background:none;border:none;color:var(--white);font-family:'Rajdhani',sans-serif;font-size:13px;outline:none}
+#growth-canvas{width:100%;height:200px;background:var(--bg2);border:1px solid var(--border);display:block}
+.growth-log-form{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:12px}
+.growth-table{width:100%;border-collapse:collapse;font-size:12px}
+.growth-table th{font-family:'Orbitron',sans-serif;font-size:9px;color:var(--cyan2);padding:6px;border-bottom:1px solid var(--border);text-align:left;letter-spacing:1px}
+.growth-table td{padding:6px;border-bottom:1px solid var(--border2)}
+
+/* ── EDITING ── */
+.naming-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.naming-output{background:var(--bg3);border:1px solid var(--cyan3);border-left:3px solid var(--cyan);padding:14px;font-family:'Rajdhani',monospace;font-size:12px;color:var(--cyan2);line-height:2;white-space:pre;display:none}
+.naming-output.visible{display:block}
+.delivery-select{background:var(--bg3);border:1px solid var(--border);color:var(--white);font-family:'Rajdhani',sans-serif;font-size:13px;padding:8px;width:100%;margin-bottom:14px;outline:none;cursor:pointer}
+.delivery-spec{background:var(--bg2);border:1px solid var(--border);padding:14px}
+.spec-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border2);font-size:13px}
+.spec-row:last-child{border:none}
+.spec-key{color:var(--grey2)}
+.spec-val{color:var(--white);font-weight:600}
+.gear-form{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:14px}
+.gear-table{width:100%;border-collapse:collapse}
+.gear-table th{font-family:'Orbitron',sans-serif;font-size:9px;color:var(--cyan2);padding:7px;border-bottom:1px solid var(--border);text-align:left;letter-spacing:1px}
+.gear-table td{padding:7px;border-bottom:1px solid var(--border2);font-size:12px}
+
+/* ── BRIEFING ── */
+#briefing-card{margin:20px;background:var(--bg2);border:1px solid var(--border);padding:24px;max-width:700px}
+.brief-greeting{font-family:'Orbitron',sans-serif;font-size:18px;color:var(--cyan);text-shadow:var(--glow2);margin-bottom:4px;letter-spacing:2px}
+.brief-date{color:var(--grey2);font-size:12px;letter-spacing:2px;margin-bottom:20px}
+.brief-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.brief-stat{background:var(--bg3);border:1px solid var(--border2);padding:12px}
+.brief-stat-label{font-size:10px;color:var(--grey2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px}
+.brief-stat-value{font-family:'Orbitron',sans-serif;font-size:22px;color:var(--cyan);text-shadow:var(--glow)}
+.brief-quote{border-top:1px solid var(--border);padding-top:16px;font-size:14px;color:var(--grey2);font-style:italic;line-height:1.6}
+.brief-quote span{color:var(--cyan2)}
+
+/* ── FORMS & INPUTS ── */
+.form-group{margin-bottom:12px}
+.form-label{display:block;font-family:'Orbitron',sans-serif;font-size:9px;color:var(--cyan2);letter-spacing:2px;margin-bottom:5px}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--white);font-family:'Rajdhani',sans-serif;font-size:13px;padding:8px 10px;outline:none;transition:border-color .2s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--cyan);box-shadow:var(--glow)}
+.form-select{cursor:pointer}
+.form-textarea{resize:vertical;min-height:80px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:12px;border-top:1px solid var(--border)}
+
+/* ── MODALS ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(2,8,16,0.85);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);width:90%;max-width:520px;max-height:85vh;overflow-y:auto;position:relative}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--bg3)}
+.modal-title{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--cyan);letter-spacing:2px}
+.modal-close{background:none;border:none;color:var(--grey2);font-size:18px;cursor:pointer;line-height:1;transition:color .2s}
+.modal-close:hover{color:var(--cyan)}
+.modal-body{padding:18px}
+
+/* ── AI OUTPUT MODAL ── */
+#ai-modal .modal{max-width:640px}
+#ai-output-content{background:var(--bg3);border:1px solid var(--border2);border-left:3px solid var(--cyan);padding:14px;font-size:13px;line-height:1.7;white-space:pre-wrap;max-height:400px;overflow-y:auto;color:var(--white)}
+.ai-modal-actions{display:flex;gap:8px;margin-top:12px;justify-content:flex-end}
+
+/* ── LOADING SPINNER ── */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--cyan3);border-top-color:var(--cyan);border-radius:50%;animation:spin .6s linear infinite}
+
+/* ── MISC ── */
+.empty-state{text-align:center;padding:40px 20px;color:var(--grey);font-size:13px}
+.empty-state .empty-icon{font-size:32px;margin-bottom:10px;opacity:.4}
+.section-label{font-family:'Orbitron',sans-serif;font-size:9px;color:var(--cyan2);letter-spacing:2px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border2)}
+
+/* ── ANIMATIONS ── */
+@keyframes scan{0%{left:-40%}100%{left:140%}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes arcPulse{0%,100%{box-shadow:0 0 8px rgba(0,212,255,.4)}50%{box-shadow:0 0 20px rgba(0,212,255,.8)}}
+@keyframes rotCW{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes rotCCW{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(-360deg)}}
+@keyframes corePulse{0%,100%{box-shadow:0 0 15px var(--cyan),0 0 30px var(--cyan2)}50%{box-shadow:0 0 25px var(--cyan),0 0 50px var(--cyan2),0 0 80px rgba(0,212,255,.3)}}
+@keyframes waveAnim{0%,100%{height:4px}50%{height:20px}}
+@keyframes typingDot{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <div class="tb-logo">
+      <div class="tb-arc"></div>
+      <div>
+        <div class="tb-title">JARVIS</div>
+        <span class="tb-sub">// SQUEEZYMEDIA SYSTEMS</span>
+      </div>
+    </div>
+    <div class="tb-scan"></div>
+    <div class="tb-clock">
+      <div id="tb-time">00:00:00</div>
+      <div id="tb-date">LOADING</div>
+    </div>
+    <div class="tb-dots">
+      <span class="tb-dot green" title="Core Systems"></span>
+      <span class="tb-dot cyan" title="AI Engine" id="ai-dot"></span>
+      <span class="tb-dot cyan" title="Voice" id="voice-dot"></span>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+
+    <!-- LEFT PANEL -->
+    <div id="left-panel">
+      <nav>
+        <button class="nav-btn active" data-mod="home" onclick="switchModule('home')">
+          <span class="nav-icon">◈</span> JARVIS AI
+        </button>
+        <button class="nav-btn" data-mod="briefing" onclick="switchModule('briefing')">
+          <span class="nav-icon">◉</span> BRIEFING
+        </button>
+        <button class="nav-btn" data-mod="clients" onclick="switchModule('clients')">
+          <span class="nav-icon">◈</span> CLIENTS
+        </button>
+        <button class="nav-btn" data-mod="projects" onclick="switchModule('projects')">
+          <span class="nav-icon">◈</span> PROJECTS
+        </button>
+        <button class="nav-btn" data-mod="content" onclick="switchModule('content')">
+          <span class="nav-icon">◈</span> CONTENT
+        </button>
+        <button class="nav-btn" data-mod="brand" onclick="switchModule('brand')">
+          <span class="nav-icon">◈</span> BRAND
+        </button>
+        <button class="nav-btn" data-mod="editing" onclick="switchModule('editing')">
+          <span class="nav-icon">◈</span> EDITING
+        </button>
+      </nav>
+      <div class="lp-section">
+        <div class="lp-label">SYSTEM STATUS</div>
+        <div class="lp-row"><span>Active Projects</span><span id="lp-projects">—</span></div>
+        <div class="lp-row"><span>Next Shoot</span><span id="lp-next-shoot">—</span></div>
+        <div class="lp-row"><span>AI Engine</span><span id="lp-ai" class="lp-val-ok">ONLINE</span></div>
+        <div class="lp-row"><span>Voice</span><span id="lp-voice">STANDBY</span></div>
+      </div>
+      <div class="lp-section">
+        <div class="lp-label">PACKAGES</div>
+        <div class="pkg-row">Private <span>CHF 450–1,200</span></div>
+        <div class="pkg-row">Dealer <span>CHF 300–2,500</span></div>
+        <div class="pkg-row">Event <span>CHF 900–2,200</span></div>
+        <div class="pkg-row">Brand <span>CHF 1,800–3,500</span></div>
+      </div>
+    </div>
+
+    <!-- CENTER PANEL -->
+    <div id="center-panel">
+
+      <!-- HOME / CHAT -->
+      <div id="module-home" class="module active">
+        <div class="mod-header">
+          <span class="mod-title">AI INTERFACE</span>
+          <span class="mod-sub">CONVERSATIONAL INTELLIGENCE ONLINE</span>
+        </div>
+        <div id="arc-wrap">
+          <div id="arc-reactor">
+            <div class="arc-ring arc-r1"></div>
+            <div class="arc-ring arc-r2"></div>
+            <div class="arc-ring arc-r3"></div>
+            <div class="arc-ring arc-r4"></div>
+            <div class="arc-core"></div>
+            <div id="wave-bars"></div>
+          </div>
+          <div id="voice-state-label">STANDBY</div>
+          <div id="live-transcript"></div>
+        </div>
+        <div id="chat-messages"></div>
+        <div id="chat-input-row">
+          <input id="chat-input" type="text" placeholder="Type or press SPACE to speak..." autocomplete="off" onkeydown="if(event.key==='Enter')handleChatSend()">
+          <button class="hud-btn" onclick="handleChatSend()">SEND</button>
+          <button class="hud-btn" id="mic-btn" onmousedown="startListening(event)" onmouseup="stopListening()" ontouchstart="startListening(event)" ontouchend="stopListening()">◉ SPEAK</button>
+        </div>
+      </div>
+
+      <!-- BRIEFING -->
+      <div id="module-briefing" class="module">
+        <div class="mod-header">
+          <span class="mod-title">MORNING BRIEFING</span>
+          <button class="hud-btn" onclick="renderBriefing()">REFRESH</button>
+        </div>
+        <div id="briefing-card"></div>
+      </div>
+
+      <!-- CLIENTS -->
+      <div id="module-clients" class="module">
+        <div class="mod-header">
+          <span class="mod-title">CLIENT DATABASE</span>
+          <div class="mod-header-actions">
+            <button class="hud-btn" onclick="openClientModal()">+ ADD CLIENT</button>
+          </div>
+        </div>
+        <div class="filter-bar">
+          <button class="filter-btn active" onclick="filterClients('all',this)">ALL</button>
+          <button class="filter-btn" onclick="filterClients('private',this)">PRIVATE</button>
+          <button class="filter-btn" onclick="filterClients('dealership',this)">DEALERSHIP</button>
+          <button class="filter-btn" onclick="filterClients('event',this)">EVENT</button>
+          <button class="filter-btn" onclick="filterClients('brand',this)">BRAND</button>
+        </div>
+        <div class="content-view active" style="display:block">
+          <div id="clients-list" class="client-grid"></div>
+        </div>
+      </div>
+
+      <!-- PROJECTS -->
+      <div id="module-projects" class="module">
+        <div class="mod-header">
+          <span class="mod-title">PROJECT CONTROL</span>
+          <button class="hud-btn" onclick="openProjectModal()">+ NEW PROJECT</button>
+        </div>
+        <div id="kanban-wrap"><div id="kanban-board"></div></div>
+      </div>
+
+      <!-- CONTENT -->
+      <div id="module-content" class="module">
+        <div class="mod-header">
+          <span class="mod-title">CONTENT STUDIO</span>
+          <div class="mod-header-actions">
+            <button class="hud-btn" onclick="openContentModal()">+ ADD POST</button>
+          </div>
+        </div>
+        <div class="tab-bar">
+          <button class="tab-btn active" data-cv="calendar" onclick="switchContentView('calendar',this)">CALENDAR</button>
+          <button class="tab-btn" data-cv="list" onclick="switchContentView('list',this)">LIST</button>
+          <button class="tab-btn" data-cv="tools" onclick="switchContentView('tools',this)">AI TOOLS</button>
+        </div>
+        <div id="cv-calendar" class="content-view active"></div>
+        <div id="cv-list" class="content-view"></div>
+        <div id="cv-tools" class="content-view"></div>
+      </div>
+
+      <!-- BRAND -->
+      <div id="module-brand" class="module">
+        <div class="mod-header">
+          <span class="mod-title">BRAND COMMAND</span>
+        </div>
+        <div class="tab-bar">
+          <button class="tab-btn active" data-bv="bios" onclick="switchBrandView('bios',this)">BIOS</button>
+          <button class="tab-btn" data-bv="pillars" onclick="switchBrandView('pillars',this)">PILLARS</button>
+          <button class="tab-btn" data-bv="growth" onclick="switchBrandView('growth',this)">GROWTH</button>
+          <button class="tab-btn" data-bv="tools" onclick="switchBrandView('tools',this)">AI TOOLS</button>
+        </div>
+        <div id="bv-bios" class="content-view active"></div>
+        <div id="bv-pillars" class="content-view"></div>
+        <div id="bv-growth" class="content-view"></div>
+        <div id="bv-tools" class="content-view"></div>
+      </div>
+
+      <!-- EDITING -->
+      <div id="module-editing" class="module">
+        <div class="mod-header">
+          <span class="mod-title">EDITING WORKFLOW</span>
+        </div>
+        <div class="tab-bar">
+          <button class="tab-btn active" data-ev="naming" onclick="switchEditView('naming',this)">NAMING</button>
+          <button class="tab-btn" data-ev="delivery" onclick="switchEditView('delivery',this)">DELIVERY</button>
+          <button class="tab-btn" data-ev="notes" onclick="switchEditView('notes',this)">EDIT NOTES</button>
+          <button class="tab-btn" data-ev="gear" onclick="switchEditView('gear',this)">GEAR LOG</button>
+        </div>
+        <div id="ev-naming" class="content-view active"></div>
+        <div id="ev-delivery" class="content-view"></div>
+        <div id="ev-notes" class="content-view"></div>
+        <div id="ev-gear" class="content-view"></div>
+      </div>
+
+    </div><!-- /center-panel -->
+
+    <!-- RIGHT PANEL -->
+    <div id="right-panel">
+      <div class="rp-label">COMMAND STATS</div>
+      <div class="stat-card">
+        <div class="stat-card-label">REVENUE THIS MONTH</div>
+        <div class="stat-card-value" id="rp-revenue">CHF —</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">ACTIVE CLIENTS</div>
+        <div class="stat-card-value" id="rp-clients">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">CONTENT QUEUE</div>
+        <div class="stat-card-value" id="rp-content">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">ACTIVE PROJECTS</div>
+        <div class="stat-card-value" id="rp-projects">—</div>
+      </div>
+      <div class="rp-label">UPCOMING SHOOTS</div>
+      <div id="rp-upcoming"><div style="color:var(--grey);font-size:12px">No shoots scheduled</div></div>
+      <div class="rp-label">RECENT CLIENTS</div>
+      <div id="rp-recent"></div>
+      <div class="rp-label">GEAR</div>
+      <div class="gear-item">Sony A7C <span class="gear-status">READY</span></div>
+      <div class="gear-item">Sigma 16mm f/1.4 <span class="gear-status">READY</span></div>
+      <div class="gear-item">DJI RSC2 <span class="gear-status">READY</span></div>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- BOTTOM BAR -->
+  <div id="bottombar">
+    <div class="bb-voice">
+      <div class="vi-dot standby" id="vi-dot"></div>
+      <span id="vi-label" style="font-family:'Orbitron',sans-serif;font-size:9px;color:var(--grey2);letter-spacing:2px">VOICE STANDBY</span>
+    </div>
+    <div class="bb-actions">
+      <button class="quick-btn" onclick="switchModule('briefing')">BRIEFING</button>
+      <button class="quick-btn" onclick="switchModule('projects')">PROJECTS</button>
+      <button class="quick-btn" onclick="switchModule('content')">CONTENT</button>
+      <button class="quick-btn" onclick="openProjectModal()">+ PROJECT</button>
+      <button class="quick-btn" onclick="openClientModal()">+ CLIENT</button>
+    </div>
+    <div class="bb-hint">HOLD SPACE TO SPEAK &nbsp;·&nbsp; SAY "HEY JARVIS" TO ACTIVATE</div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- MODALS -->
+<div class="modal-overlay" id="client-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="client-modal-title">ADD CLIENT</span>
+      <button class="modal-close" onclick="closeModal('client-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="client-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">NAME</label>
+          <input class="form-input" id="client-name" placeholder="Client name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">TYPE</label>
+          <select class="form-select" id="client-type">
+            <option value="private">Private</option>
+            <option value="dealership">Dealership</option>
+            <option value="event">Event</option>
+            <option value="brand">Brand</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">EMAIL</label>
+          <input class="form-input" id="client-email" type="email" placeholder="email@example.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">PHONE</label>
+          <input class="form-input" id="client-phone" placeholder="+41 ...">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">CAR(S)</label>
+        <input class="form-input" id="client-cars" placeholder="e.g. BMW M3 E46, Porsche 911 GT3">
+      </div>
+      <div class="form-group">
+        <label class="form-label">NOTES</label>
+        <textarea class="form-textarea" id="client-notes" placeholder="Any notes about this client..."></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="hud-btn" onclick="closeModal('client-modal')">CANCEL</button>
+        <button class="hud-btn" onclick="saveClient()">SAVE CLIENT</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="project-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="project-modal-title">NEW PROJECT</span>
+      <button class="modal-close" onclick="closeModal('project-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="project-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">CLIENT NAME</label>
+          <input class="form-input" id="project-client-name" placeholder="Client name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">PROJECT TYPE</label>
+          <select class="form-select" id="project-type" onchange="updatePackageOptions()">
+            <option value="private">Private Owner</option>
+            <option value="dealership">Dealership</option>
+            <option value="event">Event</option>
+            <option value="brand">Brand / Company</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">PACKAGE</label>
+        <select class="form-select" id="project-package" onchange="autoFillRate()"></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">RATE (CHF)</label>
+          <input class="form-input" id="project-rate" type="number" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">STATUS</label>
+          <select class="form-select" id="project-status">
+            <option>Enquiry</option><option>Confirmed</option><option>Shot</option>
+            <option>Editing</option><option>Delivered</option><option>Invoiced</option><option>Paid</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">CAR MAKE / MODEL</label>
+          <input class="form-input" id="project-car-make" placeholder="e.g. Porsche 911 Carrera S">
+        </div>
+        <div class="form-group">
+          <label class="form-label">YEAR / COLOUR</label>
+          <input class="form-input" id="project-car-detail" placeholder="e.g. 2021 Arctic Silver">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">SHOOT DATE</label>
+          <input class="form-input" id="project-shoot-date" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">LOCATION</label>
+          <input class="form-input" id="project-location" placeholder="e.g. Zurich, Aargau">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">NOTES</label>
+        <textarea class="form-textarea" id="project-notes" placeholder="Shoot notes, client requests..."></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="hud-btn" onclick="closeModal('project-modal')">CANCEL</button>
+        <button class="hud-btn" onclick="saveProject()">SAVE PROJECT</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="content-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="content-modal-title">ADD CONTENT</span>
+      <button class="modal-close" onclick="closeModal('content-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="content-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">PLATFORM</label>
+          <select class="form-select" id="content-platform">
+            <option value="instagram">Instagram</option>
+            <option value="tiktok">TikTok</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="youtube">YouTube</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">TYPE</label>
+          <select class="form-select" id="content-type">
+            <option value="reel">Reel</option>
+            <option value="post">Post</option>
+            <option value="story">Story</option>
+            <option value="short">Short</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">STATUS</label>
+          <select class="form-select" id="content-status">
+            <option value="idea">Idea</option>
+            <option value="drafted">Drafted</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="posted">Posted</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">SCHEDULED DATE</label>
+          <input class="form-input" id="content-date" type="date">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">CAPTION</label>
+        <textarea class="form-textarea" id="content-caption" placeholder="Post caption..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">HASHTAGS</label>
+        <input class="form-input" id="content-hashtags" placeholder="#automotive #squeezymedia ...">
+      </div>
+      <div class="form-actions">
+        <button class="hud-btn" onclick="closeModal('content-modal')">CANCEL</button>
+        <button class="hud-btn" onclick="saveContent()">SAVE POST</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="ai-modal">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-header">
+      <span class="modal-title" id="ai-modal-title">JARVIS OUTPUT</span>
+      <button class="modal-close" onclick="closeModal('ai-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="ai-output-content"></div>
+      <div class="ai-modal-actions">
+        <button class="hud-btn" onclick="copyAiOutput()">COPY</button>
+        <button class="hud-btn" onclick="closeModal('ai-modal')">CLOSE</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+const S = {
+  mod: 'home',
+  clients: [], projects: [], content: [], gearLog: [], brand: {}, growth: [],
+  stats: {},
+  history: [],        // chat history (last 10)
+  listening: false,
+  speaking: false,
+  dragId: null,
+  calMonth: new Date(),
+  clientFilter: 'all',
+  editId: null,
+  recognition: null,
+  wakeRec: null,
+  synthVoice: null,
+  speechQueue: [],
+  speechBusy: false,
+  transcript: ''
+};
+
+const QUOTES = [
+  "The road is there, it will always be there. You just have to decide when to take it.",
+  "Cars are the sculptures of our everyday lives.",
+  "To finish first, first you must finish.",
+  "Straight roads are for fast cars, turns are for fast drivers.",
+  "A car is not just a machine, it's a story waiting to be told.",
+  "Speed has never killed anyone. Suddenly becoming stationary, that's what gets you.",
+  "The best car safety device is a rear-view mirror with a cop in it.",
+  "There's no such thing as too much horsepower, only too little traction.",
+  "Driving at speed is an art form anyone can learn.",
+  "Every car you film is someone's proudest possession.",
+  "The engine is the heart of a car, but the driver is its soul.",
+  "A great film begins before the camera rolls.",
+  "Light is the brush, the car is the canvas.",
+  "Cinematic is a feeling, not a format.",
+  "The best shot is the one you planned and the one you didn't.",
+  "Motion reveals character — in cars and in people.",
+  "Chase the light. Chase the shot. Never chase regret.",
+  "Your lens doesn't lie. Make sure the story is worth telling.",
+  "Every detail matters — on the car and in the edit.",
+  "Swiss precision isn't just for watches."
+];
+
+const PACKAGES = {
+  private: [
+    {name:'The Showcase',rate:450},{name:'The Full Feature',rate:750},{name:'The Collection',rate:1200}
+  ],
+  dealership: [
+    {name:'Inventory Starter',rate:300},{name:'Dealer Premium',rate:800},{name:'Dealer Retainer',rate:2500}
+  ],
+  event: [
+    {name:'Event Coverage',rate:900},{name:'Full Event',rate:1600},{name:'Event + Photo Combo',rate:2200}
+  ],
+  brand: [
+    {name:'Brand Spot',rate:1800},{name:'Campaign Package',rate:3500},{name:'Custom — Quote on Request',rate:0}
+  ]
+};
+
+const DELIVERY_SPECS = {
+  'Instagram Reel': [{k:'Format',v:'H.264 MP4'},{k:'Resolution',v:'1080×1920 (9:16)'},{k:'Max Duration',v:'90 seconds'},{k:'Max File Size',v:'100 MB'},{k:'Frame Rate',v:'25 or 30 fps'},{k:'Audio',v:'Stereo, 192kbps'}],
+  'TikTok': [{k:'Format',v:'H.264 MP4'},{k:'Resolution',v:'1080×1920 (9:16)'},{k:'Max Duration',v:'60s preferred, 3min max'},{k:'Max File Size',v:'72 MB'},{k:'Frame Rate',v:'25 or 30 fps'},{k:'Audio',v:'Stereo, 128kbps+'}],
+  'YouTube': [{k:'Format',v:'H.264 or H.265 MP4'},{k:'Resolution',v:'1080p minimum (1920×1080)'},{k:'Max Duration',v:'Unlimited'},{k:'Max File Size',v:'128 GB'},{k:'Frame Rate',v:'24, 25, 30, 60 fps'},{k:'Audio',v:'Stereo or Surround, 320kbps'}],
+  'Client Delivery': [{k:'Format',v:'ProRes 422 or H.264 high-bitrate'},{k:'Resolution',v:'Original (4K if shot 4K)'},{k:'Max Duration',v:'Full edit'},{k:'Max File Size',v:'No limit'},{k:'Frame Rate',v:'Original'},{k:'Audio',v:'Uncompressed or LPCM'}]
+};
+
+const HASHTAGS = {
+  Instagram: '#automotivephotography #carsofinstagram #carphotography #automotivevideography #carfilm #swisscar #squeezymedia',
+  TikTok: '#carfyp #automotivecontent #carvideo #fyp #cartok #swisscars',
+  LinkedIn: '#videography #automotive #contentcreation #squeezymedia #swissbusiness'
+};
+
+// ═══════════════════════════════════════════════════════════
+// API HELPER
+// ═══════════════════════════════════════════════════════════
+async function api(method, endpoint, data) {
+  try {
+    const opts = { method, headers: {'Content-Type':'application/json'} };
+    if (data) opts.body = JSON.stringify(data);
+    const res = await fetch('/api' + endpoint, opts);
+    return await res.json();
+  } catch(e) {
+    console.error('API error:', e);
+    throw e;
+  }
+}
+
+async function aiCall(prompt, extraHistory = []) {
+  const msgs = [...S.history.slice(-9), ...extraHistory, {role:'user', content: prompt}];
+  const result = await api('POST', '/chat', { messages: msgs, context: S.stats });
+  if (result.ollamaDown) {
+    const msg = result.error;
+    speak(msg);
+    return msg;
+  }
+  return result.reply || '';
+}
+
+// ═══════════════════════════════════════════════════════════
+// CLOCK
+// ═══════════════════════════════════════════════════════════
+function updateClock() {
+  const now = new Date();
+  const t = now.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const d = now.toLocaleDateString('en-GB', {weekday:'short',day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
+  document.getElementById('tb-time').textContent = t;
+  document.getElementById('tb-date').textContent = d;
+}
+
+// ═══════════════════════════════════════════════════════════
+// MODULE SWITCHING
+// ═══════════════════════════════════════════════════════════
+function switchModule(name) {
+  document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+  document.getElementById('module-' + name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const nb = document.querySelector(`.nav-btn[data-mod="${name}"]`);
+  if (nb) nb.classList.add('active');
+  S.mod = name;
+  if (name === 'briefing') renderBriefing();
+  if (name === 'clients') renderClients();
+  if (name === 'projects') renderKanban();
+  if (name === 'content') { renderCalendar(); speak(`Content studio ready. You have ${S.stats.pendingContent||0} posts queued, Squeezy.`); }
+  if (name === 'brand') { renderBrandBios(); renderBrandPillars(); renderGrowthChart(); }
+  if (name === 'editing') { renderNamingView(); renderDeliveryView(); renderEditNotesView(); renderGearLogView(); }
+}
+
+function switchContentView(v, btn) {
+  document.querySelectorAll('[data-cv]').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  ['calendar','list','tools'].forEach(k => {
+    const el = document.getElementById('cv-'+k);
+    if (el) el.style.display = k === v ? 'block' : 'none';
+  });
+  if (v === 'calendar') renderCalendar();
+  if (v === 'list') renderContentList();
+  if (v === 'tools') renderContentTools();
+}
+
+function switchBrandView(v, btn) {
+  document.querySelectorAll('[data-bv]').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  ['bios','pillars','growth','tools'].forEach(k => {
+    const el = document.getElementById('bv-'+k);
+    if (el) el.style.display = k === v ? 'block' : 'none';
+  });
+  if (v === 'growth') renderGrowthChart();
+}
+
+function switchEditView(v, btn) {
+  document.querySelectorAll('[data-ev]').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  ['naming','delivery','notes','gear'].forEach(k => {
+    const el = document.getElementById('ev-'+k);
+    if (el) el.style.display = k === v ? 'block' : 'none';
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ═══════════════════════════════════════════════════════════
+// STATS & RIGHT PANEL
+// ═══════════════════════════════════════════════════════════
+async function loadStats() {
+  S.stats = await api('GET', '/stats');
+  updateStatsUI();
+}
+
+function updateStatsUI() {
+  const st = S.stats;
+  qs('rp-revenue').textContent = 'CHF ' + (st.revenueThisMonth || 0).toLocaleString('de-CH');
+  qs('rp-clients').textContent = st.totalClients || 0;
+  qs('rp-content').textContent = st.pendingContent || 0;
+  qs('rp-projects').textContent = st.activeProjects || 0;
+  qs('lp-projects').textContent = st.activeProjects || 0;
+  const nd = st.nextDeadline;
+  qs('lp-next-shoot').textContent = nd ? fmtDate(nd.shoot_date) : 'None';
+  const upEl = qs('rp-upcoming');
+  if (st.upcomingDeadlines && st.upcomingDeadlines.length) {
+    upEl.innerHTML = st.upcomingDeadlines.map(p =>
+      `<div class="deadline-item"><div class="deadline-name">${esc(p.client_name||'Unnamed')}</div><div class="deadline-date">${esc(p.car_make||'')} · ${fmtDate(p.shoot_date)}</div></div>`
+    ).join('');
+  } else {
+    upEl.innerHTML = '<div style="color:var(--grey);font-size:12px">No shoots scheduled</div>';
+  }
+  const rcEl = qs('rp-recent');
+  if (st.recentClients && st.recentClients.length) {
+    rcEl.innerHTML = st.recentClients.map(c =>
+      `<div class="recent-client"><strong>${esc(c.name)}</strong> · ${esc(c.type||'')}</div>`
+    ).join('');
+  } else {
+    rcEl.innerHTML = '<div style="color:var(--grey);font-size:12px">No clients yet</div>';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// VOICE SYSTEM
+// ═══════════════════════════════════════════════════════════
+function initVoice() {
+  // SpeechSynthesis — pick best voice
+  const loadVoices = () => {
+    const voices = speechSynthesis.getVoices();
+    const preferred = ['Google UK English Male','Daniel','Alex','Arthur','Rishi','Google US English'];
+    for (const p of preferred) {
+      const v = voices.find(v => v.name.includes(p));
+      if (v) { S.synthVoice = v; break; }
+    }
+    if (!S.synthVoice && voices.length) {
+      S.synthVoice = voices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('male'))
+        || voices.find(v => v.lang.startsWith('en')) || voices[0];
+    }
+  };
+  loadVoices();
+  speechSynthesis.onvoiceschanged = loadVoices;
+
+  // SpeechRecognition
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    console.warn('SpeechRecognition not supported. Use Chrome or Edge.');
+    qs('lp-voice').textContent = 'UNSUPPORTED';
+    return;
+  }
+
+  S.recognition = new SR();
+  S.recognition.continuous = true;
+  S.recognition.interimResults = true;
+  S.recognition.lang = 'en-US';
+
+  S.recognition.onresult = e => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) S.transcript += e.results[i][0].transcript + ' ';
+      else interim += e.results[i][0].transcript;
+    }
+    document.getElementById('live-transcript').textContent = S.transcript + interim;
+  };
+  S.recognition.onerror = e => {
+    if (e.error !== 'no-speech' && e.error !== 'aborted') console.warn('SR error:', e.error);
+    if (e.error === 'aborted') return;
+    stopListening();
+  };
+  S.recognition.onend = () => {
+    if (S.listening) {
+      // User still holding space — restart to keep mic open
+      try { S.recognition.start(); } catch(err) {}
+    } else {
+      setVoiceState('standby');
+    }
+  };
+
+  // Wake word listener
+  initWakeWord(SR);
+  // Spacebar PTT
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Space' && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName) && !S.listening) {
+      e.preventDefault(); startListening();
+    }
+  });
+  document.addEventListener('keyup', e => {
+    if (e.code === 'Space' && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) stopListening();
+  });
+}
+
+function initWakeWord(SR) {
+  try {
+    S.wakeRec = new SR();
+    S.wakeRec.continuous = true;
+    S.wakeRec.interimResults = false;
+    S.wakeRec.lang = 'en-US';
+    S.wakeRec.onresult = e => {
+      const t = e.results[e.results.length-1][0].transcript.toLowerCase();
+      if (t.includes('jarvis')) { startListening(); }
+    };
+    S.wakeRec.onend = () => { try { S.wakeRec.start(); } catch(e){} };
+    S.wakeRec.start();
+  } catch(e) { console.warn('Wake word init failed:', e); }
+}
+
+function startListening(e) {
+  if (e) e.preventDefault();
+  if (S.listening || !S.recognition) return;
+  if (S.speaking) speechSynthesis.cancel();
+  S.listening = true;
+  S.transcript = '';
+  setVoiceState('listening');
+  document.getElementById('live-transcript').textContent = '';
+  try { S.recognition.start(); } catch(err) { console.warn(err); S.listening = false; setVoiceState('standby'); }
+}
+
+function stopListening() {
+  if (!S.listening) return;
+  S.listening = false;
+  try { S.recognition.stop(); } catch(e) {}
+  setVoiceState('standby');
+  const said = S.transcript.trim();
+  S.transcript = '';
+  if (said) sendChat(said, true);
+}
+
+function setVoiceState(state) {
+  const dot = document.getElementById('vi-dot');
+  const lbl = document.getElementById('vi-label');
+  const slbl = document.getElementById('voice-state-label');
+  dot.className = 'vi-dot ' + state;
+  const labels = {standby:'VOICE STANDBY', listening:'LISTENING...', speaking:'JARVIS SPEAKING'};
+  if (lbl) lbl.textContent = labels[state] || state.toUpperCase();
+  if (slbl) slbl.textContent = labels[state] || state.toUpperCase();
+  qs('lp-voice').textContent = state.toUpperCase();
+  // Animate wave bars
+  document.querySelectorAll('.wbar').forEach(b => {
+    b.style.animationPlayState = state === 'listening' ? 'running' : 'paused';
+    b.style.height = state === 'listening' ? null : '3px';
+  });
+}
+
+function speak(text) {
+  S.speechQueue.push(text);
+  if (!S.speechBusy) processQueue();
+}
+
+function processQueue() {
+  if (!S.speechQueue.length) { S.speechBusy = false; setVoiceState('standby'); return; }
+  S.speechBusy = true;
+  const text = S.speechQueue.shift();
+  const clean = text.replace(/<[^>]+>/g,'').replace(/\*\*/g,'').replace(/#+/g,'');
+  const utt = new SpeechSynthesisUtterance(clean);
+  if (S.synthVoice) utt.voice = S.synthVoice;
+  utt.rate = 0.9; utt.pitch = 0.85; utt.volume = 1.0;
+  utt.onstart = () => { S.speaking = true; setVoiceState('speaking'); };
+  utt.onend = () => { S.speaking = false; processQueue(); };
+  utt.onerror = () => { S.speaking = false; processQueue(); };
+  speechSynthesis.speak(utt);
+}
+
+function buildWaveBars() {
+  const container = document.getElementById('wave-bars');
+  container.innerHTML = '';
+  for (let i = 0; i < 16; i++) {
+    const b = document.createElement('div');
+    b.className = 'wbar';
+    b.style.cssText = `height:3px;animation:waveAnim ${0.3+Math.random()*0.5}s ease-in-out infinite alternate;animation-play-state:paused;animation-delay:${Math.random()*0.3}s`;
+    container.appendChild(b);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// CHAT
+// ═══════════════════════════════════════════════════════════
+function handleChatSend() {
+  const inp = document.getElementById('chat-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  sendChat(text, false);
+}
+
+async function sendChat(text, fromVoice) {
+  addMsg('user', text);
+  S.history.push({role:'user', content: text});
+  if (S.history.length > 10) S.history.shift();
+  const typingId = addTyping();
+  try {
+    const result = await api('POST', '/chat', { messages: S.history, context: S.stats });
+    removeTyping(typingId);
+    const reply = result.reply || result.error || 'Systems error, Squeezy.';
+    addMsg('jarvis', reply);
+    S.history.push({role:'assistant', content: reply});
+    if (S.history.length > 10) S.history.shift();
+    speak(reply);
+  } catch(e) {
+    removeTyping(typingId);
+    const err = "I'm having trouble reaching my local systems, Squeezy. Please make sure Ollama is running.";
+    addMsg('jarvis', err);
+    speak(err);
+  }
+}
+
+function addMsg(role, text) {
+  const el = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = `<div class="msg-label">${role === 'user' ? 'SQUEEZY' : 'JARVIS'}</div><div class="msg-text">${esc(text)}</div>`;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+  return div;
+}
+
+function addTyping() {
+  const el = document.getElementById('chat-messages');
+  const id = 'typing-' + Date.now();
+  const div = document.createElement('div');
+  div.className = 'msg jarvis'; div.id = id;
+  div.innerHTML = `<div class="msg-label">JARVIS</div><div class="msg-typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+  return id;
+}
+
+function removeTyping(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+async function greetUser() {
+  const now = new Date();
+  const h = now.getHours();
+  const tod = h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening';
+  const ap = S.stats.activeProjects || 0;
+  const tasks = S.stats.pendingTasks || 0;
+  speak(`Good ${tod}, Squeezy. SqueezyMedia systems are online. You have ${ap} active project${ap!==1?'s':''} and ${tasks} task${tasks!==1?'s':''} pending.`);
+}
+
+// ═══════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════
+function qs(id) { return document.getElementById(id); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(d) { if (!d) return '—'; return new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+// ═══════════════════════════════════════════════════════════
+// CLIENTS
+// ═══════════════════════════════════════════════════════════
+async function loadClients() {
+  S.clients = await api('GET','/clients') || [];
+  renderClients();
+}
+
+function filterClients(f, btn) {
+  S.clientFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderClients();
+}
+
+function renderClients() {
+  const list = document.getElementById('clients-list');
+  if (!list) return;
+  const filtered = S.clientFilter === 'all' ? S.clients : S.clients.filter(c => c.type === S.clientFilter);
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">◈</div>No clients found. Add your first client.</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(c => {
+    const badge = `badge-${c.type||'private'}`;
+    const projs = S.projects.filter(p => p.client_name === c.name).length;
+    const rev = S.projects.filter(p => p.client_name === c.name && ['Invoiced','Paid'].includes(p.status))
+      .reduce((s,p) => s + (Number(p.rate)||0), 0);
+    return `<div class="client-card">
+      <div class="client-card-top">
+        <div class="client-name">${esc(c.name)}</div>
+        <span class="client-type-badge ${badge}">${esc(c.type||'private')}</span>
+      </div>
+      <div class="client-info">
+        ${c.email ? `<div>✉ <span>${esc(c.email)}</span></div>` : ''}
+        ${c.phone ? `<div>☎ <span>${esc(c.phone)}</span></div>` : ''}
+        ${c.cars ? `<div>🚗 <span>${esc(c.cars)}</span></div>` : ''}
+        <div>Projects: <span>${projs}</span> &nbsp;·&nbsp; Revenue: <span>CHF ${rev.toLocaleString('de-CH')}</span></div>
+        ${c.notes ? `<div style="color:var(--grey2);font-size:11px;margin-top:4px">${esc(c.notes)}</div>` : ''}
+      </div>
+      <div class="client-actions">
+        <button class="hud-btn" onclick="editClient('${c.id}')">EDIT</button>
+        <button class="hud-btn danger" onclick="deleteClient('${c.id}')">DELETE</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openClientModal(id) {
+  S.editId = id || null;
+  qs('client-modal-title').textContent = id ? 'EDIT CLIENT' : 'ADD CLIENT';
+  if (id) {
+    const c = S.clients.find(x => x.id === id);
+    if (!c) return;
+    qs('client-id').value = c.id;
+    qs('client-name').value = c.name||'';
+    qs('client-type').value = c.type||'private';
+    qs('client-email').value = c.email||'';
+    qs('client-phone').value = c.phone||'';
+    qs('client-cars').value = c.cars||'';
+    qs('client-notes').value = c.notes||'';
+  } else {
+    ['client-id','client-name','client-email','client-phone','client-cars','client-notes'].forEach(f => { qs(f).value=''; });
+    qs('client-type').value = 'private';
+  }
+  openModal('client-modal');
+}
+
+function editClient(id) { openClientModal(id); }
+
+async function saveClient() {
+  const name = qs('client-name').value.trim();
+  if (!name) { alert('Client name is required'); return; }
+  const data = {
+    name, type: qs('client-type').value,
+    email: qs('client-email').value.trim(),
+    phone: qs('client-phone').value.trim(),
+    cars: qs('client-cars').value.trim(),
+    notes: qs('client-notes').value.trim()
+  };
+  const id = qs('client-id').value;
+  if (id) {
+    await api('PUT', `/clients/${id}`, data);
+  } else {
+    await api('POST', '/clients', data);
+    speak('New client added to the database, Squeezy.');
+  }
+  closeModal('client-modal');
+  await loadClients();
+  await loadStats();
+}
+
+async function deleteClient(id) {
+  if (!confirm('Delete this client?')) return;
+  await api('DELETE', `/clients/${id}`);
+  await loadClients();
+  await loadStats();
+}
+
+// ═══════════════════════════════════════════════════════════
+// PROJECTS / KANBAN
+// ═══════════════════════════════════════════════════════════
+const STATUSES = ['Enquiry','Confirmed','Shot','Editing','Delivered','Invoiced','Paid'];
+const STATUS_COLORS = {Enquiry:'#4a6070',Confirmed:'#0099CC',Shot:'#00D4FF',Editing:'#FFB800',Delivered:'#00FF88',Invoiced:'#a078ff',Paid:'#00FF88'};
+
+async function loadProjects() {
+  S.projects = await api('GET','/projects') || [];
+  renderKanban();
+}
+
+function renderKanban() {
+  const board = qs('kanban-board');
+  if (!board) return;
+  board.innerHTML = STATUSES.map(status => {
+    const cards = S.projects.filter(p => p.status === status);
+    return `<div class="kb-col" id="kb-col-${status.toLowerCase()}"
+      ondragover="event.preventDefault();this.querySelector('.kb-drop-zone').classList.add('drag-over')"
+      ondragleave="this.querySelector('.kb-drop-zone').classList.remove('drag-over')"
+      ondrop="onKbDrop(event,'${status}')">
+      <div class="kb-col-header" style="color:${STATUS_COLORS[status]||'var(--cyan)'}">
+        ${status.toUpperCase()} <span class="kb-col-count">${cards.length}</span>
+      </div>
+      <div class="kb-cards">
+        ${cards.map(p => kbCard(p)).join('')}
+        <div class="kb-drop-zone"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function kbCard(p) {
+  return `<div class="kb-card" draggable="true"
+    ondragstart="S.dragId='${p.id}';this.classList.add('dragging')"
+    ondragend="this.classList.remove('dragging');document.querySelectorAll('.kb-drop-zone').forEach(z=>z.classList.remove('drag-over'))">
+    <div class="kb-card-client">${esc(p.client_name||'Unnamed')}</div>
+    <div class="kb-card-car">${esc(p.car_make||'')}${p.car_detail?' · '+esc(p.car_detail):''}</div>
+    ${p.shoot_date ? `<div class="kb-card-date">📅 ${fmtDate(p.shoot_date)}</div>`:''}
+    ${p.rate ? `<div class="kb-card-rate">CHF ${Number(p.rate).toLocaleString('de-CH')}</div>`:''}
+    ${p.package ? `<div style="font-size:10px;color:var(--grey2);margin-top:2px">${esc(p.package)}</div>`:''}
+    <div class="kb-card-actions">
+      <button class="kb-btn" onclick="editProject('${p.id}')">EDIT</button>
+      <button class="kb-btn" onclick="genBrief('${p.id}')">BRIEF</button>
+      <button class="kb-btn" onclick="genEmail('${p.id}')">EMAIL</button>
+      <button class="kb-btn" onclick="showChecklist('${p.id}')">LIST</button>
+      <button class="kb-btn" style="border-color:rgba(255,60,60,.4);color:#ff4444" onclick="deleteProject('${p.id}')">✕</button>
+    </div>
+  </div>`;
+}
+
+async function onKbDrop(e, newStatus) {
+  e.preventDefault();
+  document.querySelectorAll('.kb-drop-zone').forEach(z => z.classList.remove('drag-over'));
+  if (!S.dragId) return;
+  await api('PUT', `/projects/${S.dragId}`, {status: newStatus});
+  S.dragId = null;
+  await loadProjects();
+  await loadStats();
+}
+
+function openProjectModal(id) {
+  S.editId = id || null;
+  qs('project-modal-title').textContent = id ? 'EDIT PROJECT' : 'NEW PROJECT';
+  updatePackageOptions();
+  if (id) {
+    const p = S.projects.find(x => x.id === id);
+    if (!p) return;
+    qs('project-id').value = p.id;
+    qs('project-client-name').value = p.client_name||'';
+    qs('project-type').value = p.project_type||'private';
+    updatePackageOptions();
+    qs('project-package').value = p.package||'';
+    qs('project-rate').value = p.rate||'';
+    qs('project-status').value = p.status||'Enquiry';
+    qs('project-car-make').value = p.car_make||'';
+    qs('project-car-detail').value = p.car_detail||'';
+    qs('project-shoot-date').value = p.shoot_date||'';
+    qs('project-location').value = p.location||'';
+    qs('project-notes').value = p.notes||'';
+  } else {
+    ['project-id','project-client-name','project-rate','project-car-make','project-car-detail','project-shoot-date','project-location','project-notes'].forEach(f => { qs(f).value=''; });
+    qs('project-type').value='private';
+    qs('project-status').value='Enquiry';
+    updatePackageOptions();
+  }
+  openModal('project-modal');
+}
+
+function editProject(id) { openProjectModal(id); }
+
+function updatePackageOptions() {
+  const type = qs('project-type').value;
+  const sel = qs('project-package');
+  const pkgs = PACKAGES[type] || [];
+  sel.innerHTML = `<option value="">— Select package —</option>` + pkgs.map(p => `<option value="${esc(p.name)}" data-rate="${p.rate}">${esc(p.name)}${p.rate?' · CHF '+p.rate:''}</option>`).join('');
+}
+
+function autoFillRate() {
+  const sel = qs('project-package');
+  const opt = sel.options[sel.selectedIndex];
+  if (opt && opt.dataset.rate && Number(opt.dataset.rate) > 0) {
+    qs('project-rate').value = opt.dataset.rate;
+  }
+}
+
+async function saveProject() {
+  const clientName = qs('project-client-name').value.trim();
+  if (!clientName) { alert('Client name is required'); return; }
+  const data = {
+    client_name: clientName,
+    project_type: qs('project-type').value,
+    package: qs('project-package').value,
+    rate: Number(qs('project-rate').value)||0,
+    status: qs('project-status').value,
+    car_make: qs('project-car-make').value.trim(),
+    car_detail: qs('project-car-detail').value.trim(),
+    shoot_date: qs('project-shoot-date').value,
+    location: qs('project-location').value.trim(),
+    notes: qs('project-notes').value.trim()
+  };
+  const id = qs('project-id').value;
+  if (id) {
+    await api('PUT', `/projects/${id}`, data);
+  } else {
+    await api('POST', '/projects', data);
+    speak('Project logged. Shall I generate the delivery checklist, Squeezy?');
+  }
+  closeModal('project-modal');
+  await loadProjects();
+  await loadStats();
+}
+
+async function deleteProject(id) {
+  if (!confirm('Delete this project?')) return;
+  await api('DELETE', `/projects/${id}`);
+  await loadProjects();
+  await loadStats();
+}
+
+async function genBrief(id) {
+  const p = S.projects.find(x => x.id === id);
+  if (!p) return;
+  showAiModal('GENERATING PROJECT BRIEF', '<div class="spinner"></div> JARVIS is preparing the brief...');
+  const prompt = `Generate a professional project brief for SqueezyMedia. Project details: Client: ${p.client_name}, Car: ${p.car_make} ${p.car_detail}, Type: ${p.project_type}, Package: ${p.package}, Rate: CHF ${p.rate}, Shoot date: ${p.shoot_date}, Location: ${p.location}. Notes: ${p.notes}. Include: objectives, deliverables, shoot day plan, equipment needed, editing notes, delivery timeline.`;
+  const reply = await aiCall(prompt);
+  showAiModal('PROJECT BRIEF — ' + (p.client_name||'').toUpperCase(), reply);
+}
+
+async function genEmail(id) {
+  const p = S.projects.find(x => x.id === id);
+  if (!p) return;
+  showAiModal('GENERATING FOLLOW-UP EMAIL', '<div class="spinner"></div> JARVIS is drafting the email...');
+  const prompt = `Write a professional follow-up email from SqueezyMedia to the client after completing a shoot. Project: Client: ${p.client_name}, Car: ${p.car_make} ${p.car_detail}, Package: ${p.package}. The email should be warm but professional, mention the next steps (editing, delivery timeline), and invite feedback. Sign off as SqueezyMedia.`;
+  const reply = await aiCall(prompt);
+  showAiModal('FOLLOW-UP EMAIL — ' + (p.client_name||'').toUpperCase(), reply);
+}
+
+function showChecklist(id) {
+  const p = S.projects.find(x => x.id === id);
+  if (!p) return;
+  const lists = {
+    private: ['Fully charge Sony A7C batteries (x2)','Charge DJI RSC2 gimbal','Format memory cards','Pack Sigma 16mm f/1.4','Pack ND filters (4-stop, 6-stop)','Microfibre cloths for car clean','Scout location on Google Maps','Confirm shoot time with client','Check weather forecast','Plan golden hour window','Prepare release form if needed'],
+    dealership: ['Confirm number of cars to shoot','Get brand guidelines from dealer','Pack branded template assets','Charge all batteries x3','Prepare inventory shot list','Bring step ladder for overhead shots','Confirm parking/access with dealer','Schedule interior + exterior per car','Plan for 4 cars max per day'],
+    event: ['Arrive 1 hour before event starts','Scout key angles and positions','Plan coverage: arrival, action, highlights','Confirm media access/accreditation','Pack gimbal + handheld config','Prepare same-day teaser workflow if required','Charge all gear the night before','Identify VIPs or hero cars to prioritise'],
+    brand: ['Review approved script/concept doc','Confirm talent/cars with client','Plan B-roll shot list','Check brand colour grades','Brief client on approval process','Pack full kit + backup body if available','Schedule at least 2 shoot days','Confirm deliverable formats with client']
+  };
+  const items = lists[p.project_type||'private'] || lists.private;
+  showAiModal('SHOOT CHECKLIST — ' + (p.project_type||'').toUpperCase(), items.map((i,n) => `${n+1}. ${i}`).join('\n'));
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONTENT
+// ═══════════════════════════════════════════════════════════
+async function loadContent() {
+  S.content = await api('GET','/content') || [];
+}
+
+function renderCalendar() {
+  const el = qs('cv-calendar');
+  if (!el) return;
+  const now = S.calMonth;
+  const y = now.getFullYear(), m = now.getMonth();
+  const first = new Date(y,m,1);
+  const last = new Date(y,m+1,0);
+  let startDay = first.getDay(); if (startDay===0) startDay=7; startDay--;
+  const monthName = now.toLocaleDateString('en-GB',{month:'long',year:'numeric'}).toUpperCase();
+  const days = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
+  let html = `<div class="cal-nav">
+    <button class="hud-btn" onclick="calNav(-1)">‹ PREV</button>
+    <span class="cal-month">${monthName}</span>
+    <button class="hud-btn" onclick="calNav(1)">NEXT ›</button>
+  </div>
+  <div class="cal-grid">
+    ${days.map(d=>`<div class="cal-day-header">${d}</div>`).join('')}`;
+  const today = new Date();
+  let dayCount = 1 - startDay;
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(y, m, dayCount);
+    const isOther = d.getMonth() !== m;
+    const isToday = d.toDateString() === today.toDateString();
+    const dateStr = d.toISOString().split('T')[0];
+    const items = S.content.filter(c => c.scheduled_date === dateStr);
+    html += `<div class="cal-day${isOther?' other-month':''}${isToday?' today':''}" onclick="openContentModal(null,'${dateStr}')">
+      <div class="cal-day-num">${d.getDate()}</div>
+      ${items.map(c=>`<div class="cal-badge ${c.platform||'instagram'}">${(c.platform||'').slice(0,2).toUpperCase()} ${c.type||''}</div>`).join('')}
+    </div>`;
+    dayCount++;
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function calNav(dir) {
+  S.calMonth = new Date(S.calMonth.getFullYear(), S.calMonth.getMonth()+dir, 1);
+  renderCalendar();
+}
+
+function renderContentList() {
+  const el = qs('cv-list');
+  if (!el) return;
+  if (!S.content.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">◈</div>No content yet. Add your first post.</div>';
+    return;
+  }
+  el.innerHTML = `<table class="content-table"><thead><tr>
+    <th>PLATFORM</th><th>TYPE</th><th>STATUS</th><th>CAPTION</th><th>DATE</th><th>ACTIONS</th>
+  </tr></thead><tbody>
+  ${S.content.map(c=>`<tr>
+    <td><span class="cal-badge ${c.platform}">${esc(c.platform||'')}</span></td>
+    <td style="color:var(--grey2)">${esc(c.type||'')}</td>
+    <td><span class="status-badge status-${c.status||'idea'}">${esc(c.status||'idea')}</span></td>
+    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--grey2)">${esc((c.caption||'').slice(0,60))}${(c.caption||'').length>60?'…':''}</td>
+    <td style="color:var(--amber);white-space:nowrap">${fmtDate(c.scheduled_date)}</td>
+    <td><div style="display:flex;gap:4px">
+      <button class="kb-btn" onclick="editContent('${c.id}')">EDIT</button>
+      <button class="kb-btn" style="border-color:rgba(255,60,60,.4);color:#ff4444" onclick="deleteContent('${c.id}')">✕</button>
+    </div></td>
+  </tr>`).join('')}
+  </tbody></table>`;
+}
+
+function renderContentTools() {
+  const el = qs('cv-tools');
+  if (!el) return;
+  el.innerHTML = `
+  <div class="ai-tool-section">
+    <div class="ai-tool-title">◈ CAPTION GENERATOR</div>
+    <div class="form-group"><label class="form-label">DESCRIBE THE SHOOT</label>
+      <textarea class="form-textarea" id="caption-desc" placeholder="e.g. Porsche 911 GT3, sunset shoot at a mountain pass in Aargau, aggressive angles..."></textarea>
+    </div>
+    <button class="hud-btn" onclick="generateCaptions()">GENERATE CAPTIONS</button>
+    <div class="ai-result" id="caption-result"></div>
+  </div>
+  <div class="ai-tool-section">
+    <div class="ai-tool-title">◈ HOOK GENERATOR</div>
+    <div class="form-group"><label class="form-label">CAR + SHOOT TYPE</label>
+      <input class="form-input" id="hook-input" placeholder="e.g. BMW M4 Competition, cinematic reel">
+    </div>
+    <button class="hud-btn" onclick="generateHooks()">GENERATE 5 HOOKS</button>
+    <div class="ai-result" id="hook-result"></div>
+  </div>
+  <div class="ai-tool-section">
+    <div class="ai-tool-title">◈ BATCH CONTENT PLANNER</div>
+    <div class="form-group"><label class="form-label">UPCOMING SHOOTS (one per line)</label>
+      <textarea class="form-textarea" id="batch-input" placeholder="e.g.\nPorsche 911 — private — next Tuesday\nBMW dealership — 4 cars — next weekend\nAuto Zurich event — full day"></textarea>
+    </div>
+    <button class="hud-btn" onclick="generateBatch()">PLAN 30 DAYS</button>
+    <div class="ai-result" id="batch-result"></div>
+  </div>
+  <div class="ai-tool-section">
+    <div class="ai-tool-title">◈ REPURPOSE CAPTION</div>
+    <div class="form-group"><label class="form-label">ORIGINAL CAPTION</label>
+      <textarea class="form-textarea" id="repurpose-caption" placeholder="Paste your caption here..."></textarea>
+    </div>
+    <div class="form-group"><label class="form-label">REWRITE FOR</label>
+      <select class="form-select" id="repurpose-platform">
+        <option value="Instagram">Instagram</option>
+        <option value="TikTok">TikTok</option>
+        <option value="LinkedIn">LinkedIn</option>
+        <option value="YouTube">YouTube</option>
+      </select>
+    </div>
+    <button class="hud-btn" onclick="repurposeCaption()">REPURPOSE</button>
+    <div class="ai-result" id="repurpose-result"></div>
+  </div>
+  <div class="ai-tool-section">
+    <div class="ai-tool-title">◈ HASHTAG SETS</div>
+    ${Object.entries(HASHTAGS).map(([plat,tags])=>`
+      <div style="margin-bottom:12px">
+        <div class="form-label" style="margin-bottom:6px">${plat}</div>
+        <div class="hashtag-chips">${tags.split(' ').map(t=>`<span class="h-chip" onclick="copyChip(this,'${esc(t)}')">${esc(t)}</span>`).join('')}</div>
+      </div>`).join('')}
+  </div>`;
+}
+
+async function generateCaptions() {
+  const desc = qs('caption-desc').value.trim();
+  if (!desc) return;
+  const r = qs('caption-result');
+  r.className = 'ai-result visible'; r.textContent = 'Generating...';
+  const prompt = `Write 3 social media captions for SqueezyMedia for this automotive shoot: "${desc}". Write one for Instagram (cinematic, storytelling, 150-200 chars + hashtags), one for TikTok (punchy, hook first, conversational, under 100 chars + hashtags), one for LinkedIn (professional, value-driven, 200-250 chars). Use SqueezyMedia brand voice: premium, cinematic, passionate. Signature phrases: "Every car has a story. This is how we tell it." / "Swiss precision. Automotive passion." Format clearly with platform labels.`;
+  const reply = await aiCall(prompt);
+  r.textContent = reply;
+}
+
+async function generateHooks() {
+  const input = qs('hook-input').value.trim();
+  if (!input) return;
+  const r = qs('hook-result');
+  r.className = 'ai-result visible'; r.textContent = 'Generating...';
+  const prompt = `Generate 5 viral social media hook options for a SqueezyMedia video about: "${input}". Each hook should be under 10 words, stop the scroll, create curiosity or emotion. Mix styles: question, bold statement, number/list, challenge, story opener. Number them 1-5.`;
+  const reply = await aiCall(prompt);
+  r.textContent = reply;
+}
+
+async function generateBatch() {
+  const input = qs('batch-input').value.trim();
+  if (!input) return;
+  const r = qs('batch-result');
+  r.className = 'ai-result visible'; r.textContent = 'Generating 30-day plan...';
+  const prompt = `Create a 30-day social media content plan for SqueezyMedia based on these upcoming shoots:\n${input}\n\nMap out daily posts across Instagram, TikTok, and LinkedIn. Include: behind the scenes posts, teaser content, final reveals, repurposed clips, and engagement content. Format as a week-by-week plan with specific post ideas per day. Focus on automotive storytelling and the SqueezyMedia brand voice.`;
+  const reply = await aiCall(prompt);
+  r.textContent = reply;
+}
+
+async function repurposeCaption() {
+  const cap = qs('repurpose-caption').value.trim();
+  const plat = qs('repurpose-platform').value;
+  if (!cap) return;
+  const r = qs('repurpose-result');
+  r.className = 'ai-result visible'; r.textContent = 'Rewriting...';
+  const prompt = `Rewrite this social media caption for ${plat} in the SqueezyMedia brand voice (premium, cinematic, automotive passion): "${cap}". Optimise the length, tone, and hashtags for ${plat}. Keep it authentic to the SqueezyMedia identity.`;
+  const reply = await aiCall(prompt);
+  r.textContent = reply;
+}
+
+function copyChip(el, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    el.classList.add('copied');
+    setTimeout(() => el.classList.remove('copied'), 1500);
+  });
+}
+
+function openContentModal(id, dateStr) {
+  S.editId = id || null;
+  qs('content-modal-title').textContent = id ? 'EDIT POST' : 'ADD POST';
+  if (id) {
+    const c = S.content.find(x => x.id === id);
+    if (!c) return;
+    qs('content-id').value = c.id;
+    qs('content-platform').value = c.platform||'instagram';
+    qs('content-type').value = c.type||'reel';
+    qs('content-status').value = c.status||'idea';
+    qs('content-date').value = c.scheduled_date||'';
+    qs('content-caption').value = c.caption||'';
+    qs('content-hashtags').value = c.hashtags||'';
+  } else {
+    ['content-id','content-caption','content-hashtags'].forEach(f=>{qs(f).value='';});
+    qs('content-platform').value='instagram';
+    qs('content-type').value='reel';
+    qs('content-status').value='idea';
+    qs('content-date').value = dateStr||'';
+  }
+  openModal('content-modal');
+}
+
+function editContent(id) { openContentModal(id); }
+
+async function saveContent() {
+  const data = {
+    platform: qs('content-platform').value,
+    type: qs('content-type').value,
+    status: qs('content-status').value,
+    scheduled_date: qs('content-date').value,
+    caption: qs('content-caption').value.trim(),
+    hashtags: qs('content-hashtags').value.trim()
+  };
+  const id = qs('content-id').value;
+  if (id) await api('PUT',`/content/${id}`,data);
+  else await api('POST','/content',data);
+  closeModal('content-modal');
+  await loadContent();
+  renderCalendar(); renderContentList();
+  await loadStats();
+}
+
+async function deleteContent(id) {
+  if (!confirm('Delete this post?')) return;
+  await api('DELETE',`/content/${id}`);
+  await loadContent();
+  renderCalendar(); renderContentList();
+  await loadStats();
+}
+
+// ═══════════════════════════════════════════════════════════
+// BRAND
+// ═══════════════════════════════════════════════════════════
+async function loadBrand() { S.brand = await api('GET','/brand') || {}; }
+async function loadGrowth() { S.growth = await api('GET','/growth') || []; }
+
+function renderBrandBios() {
+  const el = qs('bv-bios');
+  if (!el) return;
+  const platforms = ['instagram','tiktok','linkedin','website'];
+  el.innerHTML = platforms.map(p => `
+    <div class="bio-card">
+      <div class="bio-platform">${p.toUpperCase()}</div>
+      <textarea class="bio-textarea" id="bio-${p}" rows="3">${esc(S.brand[p+'_bio']||'')}</textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px">
+        <button class="hud-btn" onclick="saveBio('${p}')">SAVE</button>
+      </div>
+    </div>`).join('');
+}
+
+async function saveBio(platform) {
+  S.brand[platform+'_bio'] = qs('bio-'+platform).value;
+  await api('PUT','/brand', S.brand);
+  speak(`${platform} bio saved, Squeezy.`);
+}
+
+function renderBrandPillars() {
+  const el = qs('bv-pillars');
+  if (!el) return;
+  const pillars = S.brand.content_pillars || [];
+  el.innerHTML = `
+    <div class="section-label">CONTENT PILLARS</div>
+    <div id="pillars-list">
+      ${pillars.map((p,i)=>`<div class="pillar-item">
+        <span class="pillar-num">${i+1}</span>
+        <input class="pillar-text" value="${esc(p)}" id="pillar-${i}">
+      </div>`).join('')}
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="hud-btn" onclick="addPillar()">+ ADD PILLAR</button>
+      <button class="hud-btn" onclick="savePillars()">SAVE PILLARS</button>
+    </div>
+    <div style="margin-top:20px">
+      <div class="section-label">BRAND VOICE NOTES</div>
+      <textarea class="bio-textarea" id="brand-voice-notes" rows="5" style="width:100%">${esc(S.brand.brand_voice_notes||'')}</textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px">
+        <button class="hud-btn" onclick="saveBrandVoice()">SAVE VOICE NOTES</button>
+      </div>
+    </div>`;
+}
+
+function addPillar() {
+  const list = qs('pillars-list');
+  const i = list.children.length;
+  const div = document.createElement('div');
+  div.className = 'pillar-item';
+  div.innerHTML = `<span class="pillar-num">${i+1}</span><input class="pillar-text" id="pillar-${i}" placeholder="New pillar...">`;
+  list.appendChild(div);
+}
+
+async function savePillars() {
+  const inputs = document.querySelectorAll('.pillar-text');
+  S.brand.content_pillars = Array.from(inputs).map(i=>i.value.trim()).filter(Boolean);
+  await api('PUT','/brand', S.brand);
+  speak('Content pillars saved, Squeezy.');
+}
+
+async function saveBrandVoice() {
+  S.brand.brand_voice_notes = qs('brand-voice-notes').value;
+  await api('PUT','/brand', S.brand);
+  speak('Brand voice notes saved, Squeezy.');
+}
+
+function renderGrowthChart() {
+  const el = qs('bv-growth');
+  if (!el) return;
+  const sorted = [...S.growth].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  el.innerHTML = `
+    <div class="section-label">FOLLOWER GROWTH TRACKER</div>
+    <canvas id="growth-canvas" height="200"></canvas>
+    <div style="display:flex;gap:8px;margin-top:6px;justify-content:center;font-size:11px">
+      <span style="color:#c084fc">■ Instagram</span>
+      <span style="color:var(--cyan)">■ TikTok</span>
+      <span style="color:#60a5fa">■ LinkedIn</span>
+      <span style="color:#f87171">■ YouTube</span>
+    </div>
+    <div style="margin-top:16px">
+      <div class="section-label">LOG NEW ENTRY</div>
+      <div class="growth-log-form">
+        <div class="form-group"><label class="form-label">DATE</label><input class="form-input" id="growth-date" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+        <div class="form-group"><label class="form-label">INSTAGRAM</label><input class="form-input" id="growth-ig" type="number" placeholder="0"></div>
+        <div class="form-group"><label class="form-label">TIKTOK</label><input class="form-input" id="growth-tt" type="number" placeholder="0"></div>
+        <div class="form-group"><label class="form-label">LINKEDIN</label><input class="form-input" id="growth-li" type="number" placeholder="0"></div>
+        <div class="form-group"><label class="form-label">YOUTUBE</label><input class="form-input" id="growth-yt" type="number" placeholder="0"></div>
+      </div>
+      <button class="hud-btn" onclick="logGrowthEntry()">LOG ENTRY</button>
+    </div>
+    ${sorted.length ? `<table class="growth-table" style="margin-top:16px">
+      <thead><tr><th>DATE</th><th>INSTAGRAM</th><th>TIKTOK</th><th>LINKEDIN</th><th>YOUTUBE</th><th></th></tr></thead>
+      <tbody>${sorted.map(e=>`<tr>
+        <td>${fmtDate(e.date)}</td>
+        <td style="color:#c084fc">${(e.instagram||0).toLocaleString()}</td>
+        <td style="color:var(--cyan)">${(e.tiktok||0).toLocaleString()}</td>
+        <td style="color:#60a5fa">${(e.linkedin||0).toLocaleString()}</td>
+        <td style="color:#f87171">${(e.youtube||0).toLocaleString()}</td>
+        <td><button class="kb-btn" style="color:#ff4444;border-color:rgba(255,60,60,.4)" onclick="deleteGrowth('${e.id}')">✕</button></td>
+      </tr>`).join('')}</tbody>
+    </table>` : '<div style="color:var(--grey);font-size:12px;margin-top:12px">No data yet. Log your first entry above.</div>'}`;
+
+  // Draw canvas chart
+  setTimeout(() => drawGrowthChart(sorted), 50);
+}
+
+function drawGrowthChart(data) {
+  const canvas = qs('growth-canvas');
+  if (!canvas || !data.length) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.offsetWidth, H = 200;
+  canvas.width = W; canvas.height = H;
+  ctx.fillStyle = '#030d1a';
+  ctx.fillRect(0,0,W,H);
+  if (data.length < 2) return;
+  const platforms = [{k:'instagram',color:'#c084fc'},{k:'tiktok',color:'#00D4FF'},{k:'linkedin',color:'#60a5fa'},{k:'youtube',color:'#f87171'}];
+  const allVals = data.flatMap(d => platforms.map(p => Number(d[p.k])||0));
+  const maxVal = Math.max(...allVals, 1);
+  const pad = {t:10,r:10,b:30,l:50};
+  const cW = W-pad.l-pad.r, cH = H-pad.t-pad.b;
+  // Grid lines
+  ctx.strokeStyle = 'rgba(0,212,255,0.1)'; ctx.lineWidth = 1;
+  for (let i=0;i<=4;i++) {
+    const y = pad.t + cH * (1 - i/4);
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
+    ctx.fillStyle = 'rgba(136,153,170,0.7)'; ctx.font = '10px Rajdhani'; ctx.textAlign = 'right';
+    ctx.fillText(Math.round(maxVal*i/4).toLocaleString(), pad.l-4, y+4);
+  }
+  // Lines
+  platforms.forEach(p => {
+    ctx.strokeStyle = p.color; ctx.lineWidth = 2; ctx.beginPath();
+    data.forEach((d,i) => {
+      const x = pad.l + (i/(data.length-1))*cW;
+      const y = pad.t + cH*(1-(Number(d[p.k])||0)/maxVal);
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    // Dots
+    data.forEach((d,i) => {
+      const x = pad.l + (i/(data.length-1))*cW;
+      const y = pad.t + cH*(1-(Number(d[p.k])||0)/maxVal);
+      ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill();
+    });
+  });
+  // Date labels
+  ctx.fillStyle = 'rgba(136,153,170,0.7)'; ctx.font = '9px Rajdhani'; ctx.textAlign = 'center';
+  const step = Math.max(1, Math.floor(data.length/6));
+  data.forEach((d,i) => {
+    if (i%step===0 || i===data.length-1) {
+      const x = pad.l + (data.length>1 ? (i/(data.length-1))*cW : cW/2);
+      ctx.fillText(fmtDate(d.date).slice(0,6), x, H-5);
+    }
+  });
+}
+
+async function logGrowthEntry() {
+  const data = {
+    date: qs('growth-date').value,
+    instagram: Number(qs('growth-ig').value)||0,
+    tiktok: Number(qs('growth-tt').value)||0,
+    linkedin: Number(qs('growth-li').value)||0,
+    youtube: Number(qs('growth-yt').value)||0
+  };
+  if (!data.date) { alert('Please select a date'); return; }
+  await api('POST','/growth',data);
+  await loadGrowth();
+  renderGrowthChart();
+  speak('Growth entry logged, Squeezy.');
+}
+
+async function deleteGrowth(id) {
+  await api('DELETE',`/growth/${id}`);
+  await loadGrowth();
+  renderGrowthChart();
+}
+
+function renderBrandTools() {
+  const el = qs('bv-tools');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="ai-tool-section">
+      <div class="ai-tool-title">◈ STORY ANGLE EXTRACTOR</div>
+      <div class="form-group"><label class="form-label">DESCRIBE A RECENT SHOOT</label>
+        <textarea class="form-textarea" id="story-desc" placeholder="e.g. Filmed a Ferrari 488 at sunset in the Swiss Alps for a private collector..."></textarea>
+      </div>
+      <button class="hud-btn" onclick="extractStoryAngles()">EXTRACT 5 ANGLES</button>
+      <div class="ai-result" id="story-result"></div>
+    </div>`;
+}
+
+async function extractStoryAngles() {
+  const desc = qs('story-desc').value.trim();
+  if (!desc) return;
+  const r = qs('story-result');
+  r.className='ai-result visible'; r.textContent='Extracting story angles...';
+  const prompt = `Extract 5 compelling content story angles for SqueezyMedia from this shoot: "${desc}". For each angle, give: a title, the core hook, and which platform it works best for. Think: human interest, technical craft, car culture, emotion, business journey. Make them genuinely interesting, not generic.`;
+  r.textContent = await aiCall(prompt);
+}
+
+// ═══════════════════════════════════════════════════════════
+// EDITING MODULE
+// ═══════════════════════════════════════════════════════════
+function renderNamingView() {
+  const el = qs('ev-naming');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="section-label">NAMING CONVENTION GENERATOR</div>
+    <div class="naming-form">
+      <div class="form-group"><label class="form-label">CLIENT NAME</label><input class="form-input" id="nm-client" placeholder="e.g. Mueller"></div>
+      <div class="form-group"><label class="form-label">CAR MAKE / MODEL</label><input class="form-input" id="nm-car" placeholder="e.g. Porsche-911-GT3"></div>
+      <div class="form-group"><label class="form-label">SHOOT DATE</label><input class="form-input" id="nm-date" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+      <div class="form-group"><label class="form-label">PROJECT TYPE</label>
+        <select class="form-select" id="nm-type">
+          <option value="Private">Private</option><option value="Dealership">Dealership</option>
+          <option value="Event">Event</option><option value="Brand">Brand</option>
+        </select>
+      </div>
+    </div>
+    <button class="hud-btn" onclick="generateNaming()">GENERATE STRUCTURE</button>
+    <div class="naming-output" id="naming-output"></div>`;
+}
+
+function generateNaming() {
+  const client = qs('nm-client').value.trim().replace(/\s+/g,'-').toUpperCase() || 'CLIENT';
+  const car = qs('nm-car').value.trim().replace(/\s+/g,'-').toUpperCase() || 'CAR-MAKE-MODEL';
+  const date = qs('nm-date').value || new Date().toISOString().split('T')[0];
+  const ym = date.slice(0,7);
+  const root = `SqueezyMedia/Projects/${ym}_${client}_${car}/`;
+  const structure = `${root}
+  RAW/
+  EDIT/
+    Premiere_Project/
+    Proxies/
+  EXPORTS/
+    Instagram/
+    TikTok/
+    YouTube/
+    Client_Delivery/
+  ASSETS/
+    Music/
+    Graphics/
+    References/
+
+FILE NAMING:
+  RAW:      SM_${ym}_${client}_${car}_A001.MP4
+  EXPORT:   SM_${ym}_${client}_${car}_Instagram_v1.mp4
+  DELIVERY: SM_${ym}_${client}_${car}_Delivery_FINAL.mp4`;
+  const out = qs('naming-output');
+  out.textContent = structure;
+  out.className = 'naming-output visible';
+}
+
+function renderDeliveryView() {
+  const el = qs('ev-delivery');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="section-label">DELIVERY SPECIFICATION CHECKER</div>
+    <select class="delivery-select" id="delivery-platform" onchange="renderDeliverySpecs()">
+      ${Object.keys(DELIVERY_SPECS).map(k=>`<option>${k}</option>`).join('')}
+    </select>
+    <div id="delivery-spec-output"></div>`;
+  renderDeliverySpecs();
+}
+
+function renderDeliverySpecs() {
+  const platform = qs('delivery-platform').value;
+  const specs = DELIVERY_SPECS[platform] || [];
+  qs('delivery-spec-output').innerHTML = `<div class="delivery-spec">
+    ${specs.map(s=>`<div class="spec-row"><span class="spec-key">${s.k}</span><span class="spec-val">${s.v}</span></div>`).join('')}
+  </div>`;
+}
+
+function renderEditNotesView() {
+  const el = qs('ev-notes');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="section-label">CLIENT FEEDBACK → EDIT INSTRUCTIONS TRANSLATOR</div>
+    <div class="form-group">
+      <label class="form-label">PASTE CLIENT FEEDBACK</label>
+      <textarea class="form-textarea" id="feedback-input" rows="5" placeholder='e.g. "Can you make it more punchy and exciting? The beginning feels a bit slow. Also more colour please."'></textarea>
+    </div>
+    <button class="hud-btn" onclick="translateFeedback()">TRANSLATE TO EDIT NOTES</button>
+    <div class="ai-result" id="feedback-result"></div>`;
+}
+
+async function translateFeedback() {
+  const feedback = qs('feedback-input').value.trim();
+  if (!feedback) return;
+  const r = qs('feedback-result');
+  r.className='ai-result visible'; r.textContent='Translating...';
+  const prompt = `Translate this client feedback into specific, actionable video editing instructions for a professional automotive videographer using Premiere Pro or DaVinci Resolve: "${feedback}". Be technical and specific. Examples: "more punchy" → increase contrast, tighten cuts to beat, add speed ramps on key moments. Format as a numbered list of clear instructions.`;
+  r.textContent = await aiCall(prompt);
+}
+
+function renderGearLogView() {
+  const el = qs('ev-gear');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="section-label">SHOOT SETTINGS LOG</div>
+    <div class="gear-form">
+      <div class="form-group"><label class="form-label">DATE</label><input class="form-input" id="gear-date" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+      <div class="form-group"><label class="form-label">PROJECT / CLIENT</label><input class="form-input" id="gear-project" placeholder="e.g. Mueller Porsche"></div>
+      <div class="form-group"><label class="form-label">CAMERA BODY</label><input class="form-input" id="gear-camera" value="Sony A7C"></div>
+      <div class="form-group"><label class="form-label">LENS</label><input class="form-input" id="gear-lens" value="Sigma 16mm f/1.4"></div>
+      <div class="form-group"><label class="form-label">GIMBAL MODE</label><input class="form-input" id="gear-gimbal" placeholder="e.g. Pan Follow, All Lock"></div>
+      <div class="form-group"><label class="form-label">APERTURE</label><input class="form-input" id="gear-aperture" placeholder="e.g. f/2.0"></div>
+      <div class="form-group"><label class="form-label">SHUTTER SPEED</label><input class="form-input" id="gear-shutter" placeholder="e.g. 1/100"></div>
+      <div class="form-group"><label class="form-label">ISO</label><input class="form-input" id="gear-iso" placeholder="e.g. 400"></div>
+      <div class="form-group"><label class="form-label">WHITE BALANCE</label><input class="form-input" id="gear-wb" placeholder="e.g. 5500K"></div>
+      <div class="form-group"><label class="form-label">FRAME RATE</label><input class="form-input" id="gear-fps" placeholder="e.g. 25fps / 100fps"></div>
+      <div class="form-group"><label class="form-label">RESOLUTION</label><input class="form-input" id="gear-res" placeholder="e.g. 4K, 1080p"></div>
+      <div class="form-group"><label class="form-label">LOCATION TYPE</label><input class="form-input" id="gear-location" placeholder="e.g. Mountain road, Studio"></div>
+    </div>
+    <div class="form-group"><label class="form-label">NOTES</label><textarea class="form-textarea" id="gear-notes" placeholder="Lighting conditions, challenges, what worked well..."></textarea></div>
+    <button class="hud-btn" onclick="saveGearEntry()">LOG ENTRY</button>
+    <div id="gear-log-table" style="margin-top:20px"></div>`;
+  renderGearTable();
+}
+
+async function saveGearEntry() {
+  const data = {
+    date: qs('gear-date').value,
+    project: qs('gear-project').value.trim(),
+    camera: qs('gear-camera').value.trim(),
+    lens: qs('gear-lens').value.trim(),
+    gimbal: qs('gear-gimbal').value.trim(),
+    aperture: qs('gear-aperture').value.trim(),
+    shutter: qs('gear-shutter').value.trim(),
+    iso: qs('gear-iso').value.trim(),
+    wb: qs('gear-wb').value.trim(),
+    fps: qs('gear-fps').value.trim(),
+    resolution: qs('gear-res').value.trim(),
+    location: qs('gear-location').value.trim(),
+    notes: qs('gear-notes').value.trim()
+  };
+  await api('POST','/gear-log',data);
+  await loadGearLog();
+  renderGearTable();
+  speak('Gear settings logged, Squeezy.');
+}
+
+async function loadGearLog() { S.gearLog = await api('GET','/gear-log') || []; }
+
+function renderGearTable() {
+  const el = qs('gear-log-table');
+  if (!el) return;
+  if (!S.gearLog.length) { el.innerHTML='<div style="color:var(--grey);font-size:12px">No gear log entries yet.</div>'; return; }
+  const sorted = [...S.gearLog].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  el.innerHTML = `<div class="section-label">PREVIOUS ENTRIES</div>
+  <table class="gear-table"><thead><tr>
+    <th>DATE</th><th>PROJECT</th><th>LENS</th><th>APERTURE</th><th>SHUTTER</th><th>ISO</th><th>WB</th><th>FPS</th><th></th>
+  </tr></thead><tbody>
+  ${sorted.map(e=>`<tr>
+    <td style="white-space:nowrap">${fmtDate(e.date)}</td>
+    <td>${esc(e.project||'')}</td>
+    <td style="color:var(--cyan2)">${esc(e.lens||'')}</td>
+    <td>${esc(e.aperture||'')}</td>
+    <td>${esc(e.shutter||'')}</td>
+    <td>${esc(e.iso||'')}</td>
+    <td>${esc(e.wb||'')}</td>
+    <td>${esc(e.fps||'')}</td>
+    <td><button class="kb-btn" style="color:#ff4444;border-color:rgba(255,60,60,.4)" onclick="deleteGearEntry('${e.id}')">✕</button></td>
+  </tr>`).join('')}
+  </tbody></table>`;
+}
+
+async function deleteGearEntry(id) {
+  await api('DELETE',`/gear-log/${id}`);
+  await loadGearLog();
+  renderGearTable();
+}
+
+// ═══════════════════════════════════════════════════════════
+// BRIEFING
+// ═══════════════════════════════════════════════════════════
+function renderBriefing() {
+  const el = qs('briefing-card');
+  if (!el) return;
+  const now = new Date();
+  const h = now.getHours();
+  const greet = h<12?'Good morning':h<18?'Good afternoon':'Good evening';
+  const nd = S.stats.nextDeadline;
+  const quote = QUOTES[Math.floor(Math.random()*QUOTES.length)];
+  el.innerHTML = `
+    <div class="brief-greeting">${greet}, Squeezy.</div>
+    <div class="brief-date">${now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase()}</div>
+    <div class="brief-grid">
+      <div class="brief-stat"><div class="brief-stat-label">ACTIVE PROJECTS</div><div class="brief-stat-value">${S.stats.activeProjects||0}</div></div>
+      <div class="brief-stat"><div class="brief-stat-label">TOTAL CLIENTS</div><div class="brief-stat-value">${S.stats.totalClients||0}</div></div>
+      <div class="brief-stat"><div class="brief-stat-label">CONTENT QUEUE</div><div class="brief-stat-value">${S.stats.pendingContent||0}</div></div>
+      <div class="brief-stat"><div class="brief-stat-label">REVENUE THIS MONTH</div><div class="brief-stat-value" style="font-size:16px">CHF ${(S.stats.revenueThisMonth||0).toLocaleString('de-CH')}</div></div>
+    </div>
+    ${nd ? `<div style="background:var(--bg3);border:1px solid var(--border2);border-left:3px solid var(--amber);padding:12px;margin-bottom:16px">
+      <div style="font-size:10px;color:var(--grey2);letter-spacing:1.5px;margin-bottom:4px">NEXT SHOOT</div>
+      <div style="font-weight:700;color:var(--white)">${esc(nd.client_name)} — ${esc(nd.car_make||'')}</div>
+      <div style="color:var(--amber);font-size:12px">${fmtDate(nd.shoot_date)} · ${esc(nd.location||'Location TBC')}</div>
+    </div>` : ''}
+    <div class="brief-quote">"<span>${esc(quote)}</span>"</div>`;
+  // Speak the briefing
+  const speech = `${greet}, Squeezy. You have ${S.stats.activeProjects||0} active projects, ${S.stats.totalClients||0} clients in your database, and ${S.stats.pendingContent||0} posts in the content queue. ${nd?`Your next shoot is ${nd.client_name} on ${fmtDate(nd.shoot_date)}.`:'No shoots scheduled.'} Today's quote: ${quote}`;
+  speak(speech);
+}
+
+function checkMorningBriefing() {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 10) {
+    switchModule('briefing');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// AI MODAL
+// ═══════════════════════════════════════════════════════════
+function showAiModal(title, content) {
+  qs('ai-modal-title').textContent = title;
+  qs('ai-output-content').textContent = content;
+  openModal('ai-modal');
+}
+
+function copyAiOutput() {
+  const text = qs('ai-output-content').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('#ai-modal .hud-btn');
+    if (btn) { btn.textContent = 'COPIED!'; setTimeout(()=>btn.textContent='COPY',1500); }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+async function loadAllData() {
+  await Promise.all([loadClients(), loadProjects(), loadContent(), loadGearLog(), loadBrand(), loadGrowth()]);
+}
+
+async function renderAllModuleViews() {
+  renderNamingView();
+  renderDeliveryView();
+  renderEditNotesView();
+  renderGearLogView();
+  renderBrandBios();
+  renderBrandPillars();
+  renderGrowthChart();
+  renderContentTools();
+  // Init sub-view visibility
+  ['cv-list','cv-tools'].forEach(id => { const e=qs(id); if(e) e.style.display='none'; });
+  ['bv-pillars','bv-growth','bv-tools'].forEach(id => { const e=qs(id); if(e) e.style.display='none'; });
+  ['ev-delivery','ev-notes','ev-gear'].forEach(id => { const e=qs(id); if(e) e.style.display='none'; });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  updateClock();
+  setInterval(updateClock, 1000);
+  buildWaveBars();
+  initVoice();
+
+  await loadStats();
+  await loadAllData();
+  await renderAllModuleViews();
+
+  checkMorningBriefing();
+  setTimeout(greetUser, 1200);
+});
+</script>
+</body>
+</html>
