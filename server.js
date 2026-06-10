@@ -5,7 +5,7 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
 const app = express();
-const PORT = 3000;
+const PORT = 1515;
 const DATA_DIR = path.join(__dirname, 'data');
 const OLLAMA_URL = 'http://localhost:11434/api/chat';
 const MODEL = 'llama3.1:8b';
