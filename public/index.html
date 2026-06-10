@@ -777,6 +777,7 @@ const S = {
   speechQueue: [],
   speechBusy: false,
   transcript: '',
+  interimTranscript: '',
   wakeRecPaused: false
 };
 
@@ -997,19 +998,29 @@ function initVoice() {
       if (e.results[i].isFinal) S.transcript += e.results[i][0].transcript + ' ';
       else interim += e.results[i][0].transcript;
     }
+    S.interimTranscript = interim;
     document.getElementById('live-transcript').textContent = S.transcript + interim;
   };
   S.recognition.onerror = e => {
-    if (e.error !== 'no-speech' && e.error !== 'aborted') console.warn('SR error:', e.error);
-    if (e.error === 'aborted') return;
+    if (e.error === 'aborted' || e.error === 'no-speech') return;
+    console.warn('SR error:', e.error);
     stopListening();
   };
   S.recognition.onend = () => {
     if (S.listening) {
       // User still holding space — restart to keep mic open
+      S.interimTranscript = '';
       try { S.recognition.start(); } catch(err) {}
     } else {
+      // Space released — all results now flushed, send what we got
       setVoiceState('standby');
+      const said = (S.transcript + (S.interimTranscript || '')).trim();
+      S.transcript = '';
+      S.interimTranscript = '';
+      document.getElementById('live-transcript').textContent = '';
+      S.wakeRecPaused = false;
+      setTimeout(() => { try { S.wakeRec && S.wakeRec.start(); } catch(_) {} }, 300);
+      if (said) sendChat(said, true);
     }
   };
 
@@ -1067,15 +1078,8 @@ function startListening(e) {
 function stopListening() {
   if (!S.listening) return;
   S.listening = false;
+  // onend will fire after stop(), flush final results, then send
   try { S.recognition.stop(); } catch(e) {}
-  setVoiceState('standby');
-  const said = S.transcript.trim();
-  S.transcript = '';
-  document.getElementById('live-transcript').textContent = '';
-  // Resume wake word listener
-  S.wakeRecPaused = false;
-  setTimeout(() => { try { S.wakeRec && S.wakeRec.start(); } catch(_) {} }, 300);
-  if (said) sendChat(said, true);
 }
 
 function setVoiceState(state) {
