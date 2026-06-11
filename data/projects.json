@@ -12,5 +12,33 @@
     "notes": "Test",
     "id": "7eef45c2-a012-4b17-9c8f-6f9868d1d6c2",
     "created_date": "2026-06-10T18:47:47.581Z"
+  },
+  {
+    "client_name": "Max Mustermann",
+    "project_type": "dealership",
+    "package": "Dealer Premium",
+    "rate": 800,
+    "status": "Shot",
+    "car_make": "Porsche 992 Turbo S",
+    "car_detail": "2022 frozen white",
+    "shoot_date": "2026-06-15",
+    "location": "Aargau",
+    "notes": "Cinematic video",
+    "id": "f3f25f38-686a-4be3-bed7-8d2aeff9e3a0",
+    "created_date": "2026-06-10T19:30:39.702Z"
+  },
+  {
+    "client_name": "Leo",
+    "project_type": "private",
+    "package": "The Showcase",
+    "rate": 450,
+    "status": "Paid",
+    "car_make": "BMW M4 F82",
+    "car_detail": "2018 Purple",
+    "shoot_date": "2026-06-01",
+    "location": "Zurich",
+    "notes": "Cinematic Video",
+    "id": "2a8574cf-563e-479c-9c8e-6314547345db",
+    "created_date": "2026-06-10T19:31:25.906Z"
   }
 ]
